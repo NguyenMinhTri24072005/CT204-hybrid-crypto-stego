@@ -9,16 +9,17 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ## 1. Bảng Theo dõi Trạng thái Dự án Hiện tại (Project Dashboard)
 
-*Cập nhật: 27/11/2026 — Đã xong Giai đoạn 1 và hoàn tất chốt 10 Quyết định Thiết kế Kỹ thuật (`BM-01` → `BM-10`).*
+*Cập nhật: 27/11/2026 — Đã hoàn thành Giai đoạn 1, Chuẩn bị đầy đủ Dataset 8,000 ảnh, và Hoàn thành + Audit Pass Giai đoạn 2 (`126/126 tests`).*
 
 | Giai đoạn | Hạng mục chính | Trạng thái | Người thực hiện chính | Người Review / Nghiệm thu | Git Commit |
 |---|---|---|---|---|---|
-| **Khởi tạo & Thiết kế** | Quét bài báo `Docs/145987.pdf`, tạo `.venv` Python 3.12.8, `CLAUDE.md`, `.antigravity/rules.md`, bộ `Plans/` (Spec + Execution Plan + 10 Điểm mù ADR) | ✅ **Hoàn thành** | Bạn + Claude + Gemini | Bạn | Chờ commit gộp cùng GĐ1 |
-| **Giai đoạn 1** | Khung cấu hình & môi trường: `SOURCES/.gitignore`, `pytest.ini`, `configs/default.yaml`, `src/config.py`, `scripts/__init__.py`, `.gitkeep` | ✅ **Hoàn thành** *(đã test đọc YAML)* | **Claude Code (Opus)** | **Gemini** (đã kiểm tra) + **Bạn** commit | ⏳ Chờ bạn `git commit` chốt GĐ1 |
-| **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | 🔜 **Sắp làm ngay** | **Claude Code (Opus)** *hoặc* **Gemini** | Agent còn lại review + chạy `pytest` | Chưa |
-| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | ⏳ Chờ GĐ2 | **Claude Code (Opus)** | **Gemini** kiểm tra edge-cases & `MSE == 0` | Chưa |
+| **Khởi tạo & Thiết kế** | Quét bài báo `Docs/145987.pdf`, tạo `.venv` Python 3.12.8, `CLAUDE.md`, `.antigravity/rules.md`, bộ `Plans/` (Spec + Execution Plan + 10 Điểm mù ADR) | ✅ **Hoàn thành** | Bạn + Claude + Gemini | Bạn | `5d04422` |
+| **Giai đoạn 1** | Khung cấu hình & môi trường: `SOURCES/.gitignore`, `pytest.ini`, `configs/default.yaml`, `src/config.py`, `scripts/__init__.py`, `.gitkeep` | ✅ **Hoàn thành** | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `5d04422` |
+| **Chuẩn bị Data** | Tải đủ Linnaeus 5 (`train=6000`, `test=2000` = **8,000 ảnh**), tạo `secret.png` (`246×300` uint8) & `cover.jpg` (`256×256×3`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng đủ 8,000 ảnh & kích thước) | `bc009e1` |
+| **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`126/126 PASSED`)* | **Claude Code (Opus)** | **Gemini** (đã review code & đo thử `EncTime`) | ⏳ Chờ bạn `git commit` chốt GĐ2 |
+| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | 🔜 **Sắp làm ngay** | **Claude Code (Opus)** | **Gemini** kiểm tra edge-cases & `MSE == 0` | Chưa |
 | **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`) + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | ⏳ Chờ GĐ3 | **Gemini (Neon/Carbon)** *hoặc* **Claude** | Agent còn lại review công thức toán học | Chưa |
-| **Giai đoạn 5** | Chuẩn bị Dataset Linnaeus 5 (8,000 ảnh) & `secret.png` (`246×300`), chạy 2 kịch bản Benchmark (Bảng 2 `156×156` & Gốc `246×300`), làm `visualize_results.ipynb` & viết Báo cáo CT204 | ⏳ Chờ GĐ4 | **Bạn** (data & chạy batch) + **Gemini** (Notebook & phân tích học thuật) | **Bạn** duyệt kết quả cuối | Chưa |
+| **Giai đoạn 5** | Chạy 2 kịch bản Benchmark trên 8,000 ảnh (Bảng 2 `156×156` & Gốc `246×300`), làm `visualize_results.ipynb` & viết Báo cáo CT204 | ⏳ Chờ GĐ4 | **Bạn** (chạy batch) + **Gemini** (Notebook & phân tích học thuật) | **Bạn** duyệt kết quả cuối | Chưa |
 
 ---
 
@@ -54,30 +55,25 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ## 3. Lộ trình Thực thi Từng Bước Chi tiết (Step-by-Step Playbook)
 
-### Bước 0: Chốt Git cho Giai đoạn 1 & Bộ Hồ sơ `Plans/` *(BẠN làm ngay bây giờ — 2 phút)*
-
-```powershell
-# Chạy tại thư mục gốc Project/
-git status
-git add .antigravity/ CLAUDE.md Plans/ SOURCES/
-git commit -m "chore(phase1): setup project skeleton, config loader, technical specs, and ADRs"
-```
+### Bước 0: Chốt Git cho Giai đoạn 1 & Bộ Hồ sơ `Plans/` — ✅ ĐÃ HOÀN THÀNH (`5d04422`)
 
 ---
 
-### Bước 1: Triển khai Giai đoạn 2 — Tầng Mã hóa `src/crypto/`
+### Bước 1: Triển khai Giai đoạn 2 — Tầng Mã hóa `src/crypto/` — ✅ ĐÃ HOÀN THÀNH & AUDIT PASS
 
-- **Người thực hiện chính:** **Claude Code (Opus)** *(hoặc giao Gemini nếu muốn làm ngay tại đây)*.
-- **Phạm vi file:** `SOURCES/src/crypto/{base.py,des3_cipher.py,aes_cipher.py,chaotic_cipher.py,__init__.py}` và `SOURCES/tests/test_crypto.py`.
-- **Prompt mẫu giao việc GĐ2:**
-  > *"Hãy đọc kỹ `Plans/01_TECHNICAL_SPEC.md` (Mục 2 và Mục 3.1) và `Plans/03_TECHNICAL_BLIND_SPOTS_AND_DECISIONS.md` (`BM-03`, `BM-04`, `BM-05`, `BM-10`). Triển khai trọn vẹn Giai đoạn 2 (`src/crypto/*` và `tests/test_crypto.py`), bao gồm `derive_bytes` tách miền SHA-256, `ciphertext_to_image_view`, `DES3Cipher` (adjust_key_parity + chặn khóa suy biến), `AESCipher`, `ChaoticCipher` (`@numba.njit`, `clip(floor(x*256), 0, 255)` từ `x_1`, tùy chọn `cache_mask: bool = False`, hàm `warmup()`), và factory `create_cipher`. Chạy `.\.venv\Scripts\pytest.exe tests/test_crypto.py -v` từ `SOURCES/` cho đến khi pass 100%, không sửa các file của GĐ3–GĐ4."*
+- **Người thực hiện chính:** **Claude Code (Opus)** — đã hoàn thành 6 file trong `SOURCES/src/crypto/*` và `SOURCES/tests/test_crypto.py`.
+- **Kết quả Audit độc lập bởi Gemini (27/11/2026):**
+  - Chạy lại `.\.venv\Scripts\pytest.exe tests/test_crypto.py -v`: **126/126 PASSED (2.84s)**.
+  - Kiểm chứng thực tế trên `SOURCES/data/sample/secret.png` (`246×300`) & biên `NaN`: khôi phục chính xác 100%, chặn được `NaN` và khóa 3DES suy biến kể cả sau bước chỉnh bit parity.
+  - Đo thử tốc độ median (100 lần chạy sau `warmup()` trên ảnh `246×300`): `3DES ≈ 3.84 ms` (sát `3.55 ms` bài báo), `AES ≈ 0.15 ms` (nhờ AES-NI), `Chaotic (cache=False) ≈ 0.43 ms`, `Chaotic (cache=True) ≈ 0.048 ms` (sát `0.036 ms` bài báo!).
+  - **Phê duyệt 3 chi tiết cài đặt bổ sung của Claude:** (1) `seed_offset` trên Chaotic chỉ cộng vào `ecc_seed`, giữ nguyên `x0, r` chuẩn bài báo; (2) Kiểm tra chặt `key_bytes/iv_bytes` trong YAML (`24/8`, `16/16`); (3) Thuộc tính chỉ đọc `.key`, `.iv` (kiểu `bytes` bất biến) và `combined_mask(n)` (không sửa in-place mảng trả về).
 - **Tiêu chí Nghiệm thu GĐ2 (Definition of Done):**
-  - [ ] Tách miền khóa bằng SHA-256 từ `crypto.key_seed: 2025` (16 byte đầu của khóa 3DES khác hoàn toàn khóa AES); hỗ trợ `seed_offset`.
-  - [ ] Gọi `encrypt()` nhiều lần trên cùng instance trả kết quả y hệt nhau; `ciphertext_to_image_view` cắt đúng `H_s * W_s` byte đầu không đệm `255`.
-  - [ ] `DES3Cipher` từ chối khóa suy biến (`b"\x01" * 24`).
-  - [ ] `ChaoticCipher` chạy đúng cả `cache_mask=False` (mặc định) và `cache_mask=True`, có `warmup()`, xử lý tốt `b""` và ảnh `246×300` / `303×384`.
-  - [ ] `.\.venv\Scripts\pytest.exe tests/test_crypto.py -v` đạt **100% PASSED**.
-- **Chốt mốc:** Bạn chạy `git commit -m "feat(phase2): implement 3DES, AES, and Chaotic-ECC ciphers with unit tests"`.
+  - [x] Tách miền khóa bằng SHA-256 từ `crypto.key_seed: 2025` (16 byte đầu của khóa 3DES khác hoàn toàn khóa AES); hỗ trợ `seed_offset`.
+  - [x] Gọi `encrypt()` nhiều lần trên cùng instance trả kết quả y hệt nhau; `ciphertext_to_image_view` cắt đúng `H_s * W_s` byte đầu không đệm `255` và trả về bản sao ghi được.
+  - [x] `DES3Cipher` từ chối khóa suy biến (`K1 == K2` hoặc `K2 == K3`, kể cả sau `adjust_key_parity`).
+  - [x] `ChaoticCipher` chạy đúng cả `cache_mask=False` (mặc định) và `cache_mask=True`, có `warmup()`, xử lý tốt `b""` và ảnh `246×300` / `303×384`.
+  - [x] `.\.venv\Scripts\pytest.exe tests/test_crypto.py -v` đạt **100% PASSED** (`126/126`).
+- **Chốt mốc (BẠN thực hiện trước khi sang GĐ3):** Chạy `git add SOURCES/src/crypto/ SOURCES/tests/test_crypto.py Plans/` và `git commit -m "feat(phase2): implement 3DES, AES, and Chaotic-ECC ciphers with unit tests"`.
 
 ---
 
@@ -96,17 +92,11 @@ git commit -m "chore(phase1): setup project skeleton, config loader, technical s
 
 ---
 
-### Bước 3: Chuẩn bị Ảnh Mẫu `246×300` & Dataset Linnaeus 5 *(BẠN thực hiện trước GĐ4)*
+### Bước 3: Chuẩn bị Ảnh Mẫu `246×300` & Dataset Linnaeus 5 — ✅ ĐÃ HOÀN THÀNH (`bc009e1`)
 
-1. **Tạo ảnh bí mật `SOURCES/data/sample/secret.png` đúng chuẩn `coins.png` `246×300` của MATLAB (`BM-01`):**
-   ```powershell
-   cd SOURCES
-   .\.venv\Scripts\python.exe -c "import cv2; from skimage import data; s = cv2.resize(data.coins(), (300, 246), interpolation=cv2.INTER_AREA); cv2.imwrite('data/sample/secret.png', s); print('Saved:', s.shape, s.dtype)"
-   ```
-   *(Lưu ý trong `cv2.resize(img, (width, height))`, truyền `(300, 246)` sẽ tạo mảng `shape == (246, 300)` đúng `73,800` bytes!)*
-2. **Giải nén Dataset Linnaeus 5 (`256×256`, 8,000 ảnh):**
-   - Đặt vào `SOURCES/data/linnaeus5/train/{berry,bird,dog,flower,other}/*.jpg` (6,000 ảnh) và `SOURCES/data/linnaeus5/test/{berry,bird,dog,flower,other}/*.jpg` (2,000 ảnh).
-   - Copy 1 ảnh quả mâm xôi từ `train/berry/` sang `SOURCES/data/sample/cover.jpg` để làm ảnh mẫu cố định cho Hình 4–5.
+- [x] `SOURCES/data/sample/secret.png`: đã xác nhận `(246, 300), uint8`.
+- [x] `SOURCES/data/sample/cover.jpg`: đã có sẵn (`256×256×3`).
+- [x] `SOURCES/data/linnaeus5/`: đã xác nhận đủ `train = 6,000`, `test = 2,000`, tổng **8,000 ảnh `.jpg`** và được `.gitignore` chặn an toàn.
 
 ---
 

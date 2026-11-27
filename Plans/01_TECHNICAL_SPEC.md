@@ -176,9 +176,10 @@ def ciphertext_to_image_view(ciphertext: bytes, secret_shape: tuple[int, int]) -
       def warmup(self) -> None:
           """Biên dịch trước hàm @numba.njit trên mảng nháp 16 bytes."""
   ```
-  - **Mặc định `cache_mask = False`:** Mỗi lần gọi `encrypt`/`decrypt` đều tính động `chaos_mask` (qua Numba JIT) và `ecc_mask` để phản ánh trung thực chi phí toàn phần của thuật toán.
-  - **Khi bật `cache_mask = True`:** Lưu cache cặp mặt nạ tổng hợp `combined_mask = chaos_mask ^ ecc_mask` theo độ dài `N` gần nhất để phục vụ thí nghiệm đo tốc độ XOR keystream thuần (đối chiếu con số `3.62e-5 s` của Bảng 2).
-- **Kiểm tra biên:** Ném `ValueError` nếu không thỏa `0.0 < x0 < 1.0` hoặc `0.0 < r <= 4.0`; trả về `b""` nếu đầu vào `b""`.
+  - **`seed_offset` trên `ChaoticCipher`:** Chỉ cộng `seed_offset` vào `ecc_seed` (giữ nguyên `x0 = 0.785398` và `r = 3.999` của bài báo để không rơi khỏi miền hỗn loạn).
+  - **Mặc định `cache_mask = False`:** Mỗi lần gọi `encrypt`/`decrypt` đều tính động `chaos_mask` (qua Numba JIT `logistic_mask(x0, r, n)`) và `ecc_mask` để phản ánh trung thực chi phí toàn phần của thuật toán.
+  - **Khi bật `cache_mask = True`:** Lưu cache cặp mặt nạ tổng hợp `combined_mask(n) = chaos_mask ^ ecc_mask` theo độ dài `N` gần nhất để phục vụ thí nghiệm đo tốc độ XOR keystream thuần (đối chiếu con số `3.62e-5 s` của Bảng 2). *(Lưu ý: không sửa in-place mảng trả về từ `combined_mask`).*
+- **Kiểm tra biên:** Ném `ValueError` nếu không thỏa `0.0 < x0 < 1.0` hoặc `0.0 < r <= 4.0` (kể cả `NaN`/`Inf`); trả về `b""` nếu đầu vào `b""`.
 
 #### 3.1.5 `src/crypto/__init__.py` (Factory)
 ```python
