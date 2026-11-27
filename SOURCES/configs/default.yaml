@@ -1,0 +1,35 @@
+# Default configuration — single source of truth for all algorithm parameters.
+# Paths are relative to SOURCES/ (resolved by src.config.load_config).
+
+paths:
+  data_dir: data/linnaeus5        # Linnaeus 5: {train,test}/{berry,bird,dog,flower,other}/*.jpg
+  sample_dir: data/sample         # small cover/secret pair for run_single and tests
+  results_dir: results
+
+crypto:
+  key_seed: 2025                  # deterministic key/IV generation (reproducible runs)
+  des3:                           # 3DES-192, CBC, EDE, PKCS7 (paper §4.1)
+    key_bytes: 24
+    iv_bytes: 8
+  aes:                            # AES-128, CBC, PKCS7 (paper §4.2)
+    key_bytes: 16
+    iv_bytes: 16
+  chaotic:                        # Logistic map + simulated ECC mask (paper §4.3)
+    x0: 0.785398
+    r: 3.999
+    ecc_seed: 42
+
+stego:
+  cover_size: [256, 256]          # H, W of RGB cover
+  max_lsb: 3                      # paper: 1–3 LSBs per colour channel
+  header_lsb: 1                   # header always at 1 LSB so it is readable before num_lsb is known
+  scale_up_interpolation: cubic   # used when payload exceeds max_lsb capacity
+
+secret:
+  path: data/sample/secret.png    # grayscale secret (paper: coins image)
+  resize: null                    # [H, W] to resize the secret, or null to keep original size
+
+benchmark:
+  ciphers: [3des, aes, chaotic]
+  splits: [train, test]
+  csv_name: benchmark_results.csv

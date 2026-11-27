@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dataset (Linnaeus 5, ~8,000 images) — download locally, never commit
+data/linnaeus5/*
+!data/linnaeus5/.gitkeep
+
+# Generated outputs
+results/*
+!results/.gitkeep
