@@ -3,7 +3,7 @@
 ## 1. Project Context & Repository Layout
 - **Objective:** Python 3.12 reproduction of *"A Hybrid Crypto-Steganography Framework for Secure Image Transfer"* (ICITSC 2025, originally MATLAB R2024a) for course CT204 Information Security.
 - **Paper Specification:** `Docs/145987.md` (lightweight Markdown transcription of `Docs/145987.pdf`; figures in `Docs/145987_assets/`). Always read `Docs/145987.md` instead of parsing the PDF.
-- **Planning, Technical Spec & ADRs:** `Plans/01_TECHNICAL_SPEC.md`, `Plans/02_EXECUTION_PLAN_AND_ROLES.md`, and `Plans/03_TECHNICAL_BLIND_SPOTS_AND_DECISIONS.md` (`BM-01` through `BM-10`, outside `SOURCES/`). Always consult and strictly follow the locked-in decisions in `Plans/` when implementing or reviewing phases.
+- **Planning, Technical Spec & ADRs:** `Plans/01_TECHNICAL_SPEC.md`, `Plans/02_EXECUTION_PLAN_AND_ROLES.md`, `Plans/03_TECHNICAL_BLIND_SPOTS_AND_DECISIONS.md` (`BM-01` through `BM-10`), and `Plans/04_TKINTER_UI_SPEC_AND_PLAN.md` (Phase 6 Tkinter Offline Desktop UI & `.exe` packaging spec, outside `SOURCES/`). Always consult and strictly follow the locked-in decisions in `Plans/` when implementing or reviewing phases.
 - **Code Root:** `SOURCES/` (Git root is the parent directory `Project/`). All Python source code, configs, tests, scripts, and virtual environment live under `SOURCES/`.
 
 ## 2. Environment & Terminal Execution Rules (Windows)

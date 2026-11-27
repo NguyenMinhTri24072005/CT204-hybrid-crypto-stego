@@ -9,7 +9,7 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ## 1. Bảng Theo dõi Trạng thái Dự án Hiện tại (Project Dashboard)
 
-*Cập nhật: 27/11/2026 — Đã hoàn thành toàn bộ Code (GĐ1 → GĐ4) và Chạy xong Thực nghiệm 8,000 ảnh Linnaeus 5 (`24,000/24,000` khôi phục chính xác `MSE == 0`). Chỉ còn bước hoàn thiện Notebook trực quan hóa & README/Báo cáo CT204.*
+*Cập nhật: 27/11/2026 — Đã hoàn thành và chốt Git toàn bộ GĐ1 → GĐ5 (`f03d754`: 275/275 tests, thực nghiệm 8,000 ảnh Linnaeus 5 khôi phục 100%, và Notebook 11 biểu đồ). Đang chuyển sang **Giai đoạn 6: Xây dựng Ứng dụng Desktop Tkinter Offline & Đóng gói `.exe`** theo đặc tả [04_TKINTER_UI_SPEC_AND_PLAN.md](./04_TKINTER_UI_SPEC_AND_PLAN.md).*
 
 | Giai đoạn | Hạng mục chính | Trạng thái | Người thực hiện chính | Người Review / Nghiệm thu | Git Commit |
 |---|---|---|---|---|---|
@@ -19,8 +19,10 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 | **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`126/126 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `08c2b15` |
 | **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | ✅ **Hoàn thành & Đã Audit** *(`236/236 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `30ce5ac` |
 | **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`, `__init__.py`) + tích hợp `pipeline.py` + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`275/275 PASSED`)* | **Gemini (Carbon)** | **Claude Code (Opus)** (audit pass) + **Gemini** (SSIM Gaussian `σ=1.5`) | `93c72e1` |
-| **Giai đoạn 5A (Thực nghiệm)** | Chạy `run_single` (Hình 4–5) & `run_benchmark` trên **8,000 ảnh Linnaeus 5** (`24,000` lượt chạy, khôi phục `100%`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng & đối chiếu Bảng 2) | Mở chặn trong `.gitignore` để push lên GitHub |
-| **Giai đoạn 5B (Notebook & Đóng gói)** | Viết & thực thi `SOURCES/notebooks/visualize_results.ipynb` (nạp dữ liệu từ GitHub clone, 11 biểu đồ đa chiều & bảng tổng hợp) | ✅ **Hoàn thành** | **Gemini (Carbon)** | **Bạn** kiểm tra, `git push` & viết báo cáo CT204 | ⏳ Sẵn sàng `git commit` & `git push` |
+| **Giai đoạn 5A (Thực nghiệm)** | Chạy `run_single` (Hình 4–5) & `run_benchmark` trên **8,000 ảnh Linnaeus 5** (`24,000` lượt chạy, khôi phục `100%`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng & đối chiếu Bảng 2) | `f03d754` |
+| **Giai đoạn 5B (Notebook)** | Viết & thực thi `SOURCES/notebooks/visualize_results.ipynb` (nạp dữ liệu từ GitHub clone, 11 biểu đồ đa chiều & bảng tổng hợp) | ✅ **Hoàn thành** | **Gemini (Carbon)** | **Bạn** | `f03d754` |
+| **Giai đoạn 6A (Desktop UI)** | Thiết kế đặc tả [04_TKINTER_UI_SPEC_AND_PLAN.md](./04_TKINTER_UI_SPEC_AND_PLAN.md) & Cài đặt ứng dụng Tkinter Offline (`SOURCES/app.py`, `SOURCES/src/ui/*`, `tests/test_ui_controller.py`) | ✅ **Hoàn thành & Đã Audit** *(`347/347 PASSED`)* | **Gemini** (Spec) + **Claude Code (Opus)** (Code) | **Gemini** (Audit pass + sửa 3 điểm biên) + **Bạn** | ⏳ Sẵn sàng `git commit` |
+| **Giai đoạn 6B (Đóng gói `.exe`)** | Cấu hình `PyInstaller` (`ct204_app.spec` + `build_exe.ps1`), nhúng `configs/`, `sample/`, `results/*.csv` và xuất file `.exe` chạy độc lập | ⏳ **Kế hoạch tiếp theo** | **Claude / Gemini** + **Bạn** | **Bạn** chạy kiểm thử `.exe` ngoài `.venv` | ⏳ Chưa thực hiện |
 
 ---
 
@@ -135,4 +137,17 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
     - `UACI_enc`: `30.33% / 30.35% / 30.51%` (khớp `30.81%–30.96%` bài báo và giữ đúng thứ tự `3DES < AES < Chaotic`).
     - `Corr_enc`: `+0.0062 / -0.0014 / -0.0134` (khớp đúng dấu và độ lớn `+0.0003 / -0.0041 / -0.0098` của bài báo!).
     - `Entropy`: `7.992–7.993` trên bản mã (`entropy_enc`) và `7.466` trên ảnh giấu tin (`entropy_stego`).
-- [x] **Bước hoàn thiện cuối (Giai đoạn 5B):** Đã viết và chạy sẵn toàn bộ 11 biểu đồ chuyên sâu + bảng đối chiếu trong `SOURCES/notebooks/visualize_results.ipynb` (tự động `git clone https://github.com/NguyenMinhTri24072005/CT204-hybrid-crypto-stego.git` để nạp dữ liệu), đồng thời cập nhật `SOURCES/.gitignore` cho phép đẩy `benchmark_results.csv`, `benchmark_summary_table2.csv` và `results/single/*` lên GitHub.
+- [x] **Bước hoàn thiện cuối (Giai đoạn 5B):** Đã viết và chạy sẵn toàn bộ 11 biểu đồ chuyên sâu + bảng đối chiếu trong `SOURCES/notebooks/visualize_results.ipynb` (tự động `git clone https://github.com/NguyenMinhTri24072005/CT204-hybrid-crypto-stego.git` để nạp dữ liệu), đồng thời cập nhật `SOURCES/.gitignore` cho phép đẩy `benchmark_results.csv`, `benchmark_summary_table2.csv` và `results/single/*` lên GitHub (`f03d754`).
+
+---
+
+### Bước 6: Xây dựng Ứng dụng Desktop Tkinter Offline & Đóng gói `.exe` (Giai đoạn 6)
+
+- **Đặc tả kỹ thuật chuẩn:** [04_TKINTER_UI_SPEC_AND_PLAN.md](./04_TKINTER_UI_SPEC_AND_PLAN.md)
+- **Giai đoạn 6A — Cài đặt Giao diện Desktop Tkinter (`SOURCES/app.py`, `SOURCES/src/ui/*`, `SOURCES/tests/test_ui_controller.py`):**
+  - [ ] **Claude Code (Opus)** cài đặt đầy đủ 4 Tab (Mã hóa & Giấu tin, Giải mã & Tamper Lab, So sánh trực tiếp 3 thuật toán, Dashboard 8,000 ảnh) + `resources.py` sẵn sàng cho `PyInstaller`, không chạm vào code lõi GĐ1–GĐ4.
+  - [ ] **Antigravity (Gemini)** audit code, kiểm tra `git diff` tầng lõi = 0, chạy `pytest` toàn hệ thống và kiểm thử khởi chạy ứng dụng.
+  - [ ] **Bạn** trải nghiệm trực tiếp giao diện `.\.venv\Scripts\python.exe app.py` và chốt Git commit GĐ6A.
+- **Giai đoạn 6B — Đóng gói thành file `.exe` độc lập bằng `PyInstaller`:**
+  - [ ] Tạo cấu hình `SOURCES/packaging/ct204_app.spec` + `build_exe.ps1` (hỗ trợ `NUMBA_CACHE_DIR` và nhúng `configs/`, `data/sample/`, `results/*.csv`).
+  - [ ] Xuất bản `.exe` và kiểm thử chạy độc lập hoàn toàn ngoài môi trường Python `.venv`.

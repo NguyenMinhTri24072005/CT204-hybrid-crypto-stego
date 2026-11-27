@@ -20,6 +20,7 @@ Python 3.12 (`pyenv-win`, `SOURCES/.python-version`) with the venv at `SOURCES/.
 .\.venv\Scripts\pytest.exe "tests/test_crypto.py::test_name" -q # one test
 .\.venv\Scripts\python.exe -m scripts.run_single                # demo: one cover/secret pair → images + histograms
 .\.venv\Scripts\python.exe -m scripts.run_benchmark             # batch over Linnaeus 5 → CSV
+.\.venv\Scripts\python.exe app.py                               # offline Tkinter desktop UI (Phase 6A)
 ```
 
 Imports are package-absolute (`from src.crypto.aes_cipher import AESCipher`); pytest resolves them via `pythonpath = .` in its config.
@@ -80,12 +81,12 @@ Paper Table 2 averages (3DES / AES / Chaotic): MSE ≈ 0.50, PSNR ≈ 51.15 dB, 
 
 ## Implementation phases
 
-1. Project skeleton: `configs/default.yaml`, pytest config, `SOURCES/.gitignore`.
-2. `src/crypto/` + `tests/test_crypto.py`.
-3. `src/stego/lsb.py` + `src/pipeline.py` + `tests/test_lsb.py`, `tests/test_pipeline.py`.
-4. `src/metrics/` + `scripts/run_single.py`, `scripts/run_benchmark.py`.
-
-All files above already exist as empty placeholders. Finish and test one phase before starting the next.
+1. Project skeleton: `configs/default.yaml`, pytest config, `SOURCES/.gitignore`. (Completed)
+2. `src/crypto/` + `tests/test_crypto.py`. (Completed)
+3. `src/stego/lsb.py` + `src/pipeline.py` + `tests/test_lsb.py`, `tests/test_pipeline.py`. (Completed)
+4. `src/metrics/` + `scripts/run_single.py`, `scripts/run_benchmark.py`. (Completed)
+5. Full 8,000-image benchmark (`results/*.csv`) + `notebooks/visualize_results.ipynb`. (Completed)
+6. Offline Tkinter Desktop UI (`SOURCES/app.py`, `SOURCES/src/ui/*`, `SOURCES/tests/test_ui_controller.py`) & PyInstaller `.exe` readiness — **strictly follow `Plans/04_TKINTER_UI_SPEC_AND_PLAN.md` without modifying any Phase 1–4 core files**.
 
 ## Gitignore note
 
