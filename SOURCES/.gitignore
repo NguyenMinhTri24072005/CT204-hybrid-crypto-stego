@@ -18,3 +18,7 @@ results/*
 results/single/*
 !results/single/*.csv
 !results/single/*.png
+
+# PyInstaller build outputs
+build/
+dist/
