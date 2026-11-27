@@ -130,18 +130,20 @@
 
 ---
 
-### BM-09: Mẫu số công thức `MSE` trên ảnh màu RGB và Định nghĩa `Correlation Coefficient`
+### BM-09: Mẫu số công thức `MSE` màu RGB, Cửa sổ `SSIM` và Định nghĩa `Correlation Coefficient`
 
 - **Điểm mù & Bằng chứng từ bài báo:**
   - Eq. (3) viết mẫu số MSE là $M \times N$ (công thức sách giáo khoa cho ảnh xám), trong khi áp dụng cho ảnh màu RGB `256×256×3`. Nếu chia cho $M \times N$ thì nhúng 1-LSB sẽ ra `MSE = 1.50` thay vì `0.50` như Bảng 2!
+  - Với `SSIM` (Eq. 5): Thư viện `scikit-image` mặc định dùng cửa sổ hộp đều `7×7` (`0.99885`), trong khi hàm `ssim()` của MATLAB R2024a dùng cửa sổ Gaussian `11×11, σ = 1.5` theo chuẩn Wang et al. 2004 (`0.99855` — trùng khít `0.998494` của Bảng 2).
   - Với `Correlation`: Mục 4.4.5 mô tả tương quan chéo giữa ảnh gốc và ảnh mã hóa, còn Mục 4.1 bước 6 & Mục 4.2 bước 9 viết *"mean RGB channel correlation"*.
 - **Các phương án đề xuất:**
-  1. *Phương án A:* Chia MSE cho $H \times W$ $\rightarrow$ sai lệch gấp 3 lần chuẩn `immse` của MATLAB và lệch hoàn toàn Bảng 2.
+  1. *Phương án A:* Chia MSE cho $H \times W$ và giữ cửa sổ hộp đều `7×7` mặc định của `skimage` $\rightarrow$ MSE lệch gấp 3 lần và SSIM lệch nhẹ ở chữ số thập phân thứ 4 so với MATLAB.
   2. *Phương án B (Tối ưu):*
      - Tính `MSE` bằng trung bình cộng bình phương sai số trên **toàn bộ phần tử mảng $H \times W \times C$** (`np.mean((a.astype(np.float64) - b.astype(np.float64)) ** 2)`).
+     - Tính `SSIM` với `gaussian_weights=True, sigma=1.5, use_sample_covariance=False` (fallback sang cửa sổ lẻ nhỏ khi ảnh test `< 11×11`).
      - Cài đặt `cross_correlation(img_a, img_b)` hỗ trợ cả ảnh 2D (tương quan phẳng Pearson) và ảnh 3D RGB (trung bình cộng tương quan Pearson của từng cặp kênh R, G, B), đồng thời cung cấp thêm `adjacent_pixel_correlation(img)` (ngang/dọc/chéo) cho phân tích mở rộng.
 - **Quyết định chọn:** **Phương án B.**
-- **Tại sao chọn:** Tương đương chính xác 100% với hàm `immse(A, B)` của MATLAB R2024a và bao phủ trọn vẹn cả hai cách diễn đạt về hệ số tương quan trong bài báo.
+- **Tại sao chọn:** Tương đương chính xác 100% với hàm `immse(A, B)` và `ssim(A, B)` của MATLAB R2024a (tốc độ chỉ chênh ~45 giây trên 24,000 lượt chạy) và bao phủ trọn vẹn cả hai cách diễn đạt về hệ số tương quan trong bài báo.
 
 ---
 

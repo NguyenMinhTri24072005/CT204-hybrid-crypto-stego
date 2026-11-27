@@ -9,6 +9,12 @@ __pycache__/
 data/linnaeus5/*
 !data/linnaeus5/.gitkeep
 
-# Generated outputs
+# Generated outputs — ignore ad-hoc runs, but track official CSVs & single demo for GitHub/Colab notebook
 results/*
 !results/.gitkeep
+!results/benchmark_results.csv
+!results/benchmark_summary_table2.csv
+!results/single/
+results/single/*
+!results/single/*.csv
+!results/single/*.png

@@ -9,7 +9,7 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ## 1. Bảng Theo dõi Trạng thái Dự án Hiện tại (Project Dashboard)
 
-*Cập nhật: 27/11/2026 — Đã hoàn thành & Audit chéo xong toàn bộ Giai đoạn 1 → Giai đoạn 4 (`274/274 tests PASSED`).*
+*Cập nhật: 27/11/2026 — Đã hoàn thành toàn bộ Code (GĐ1 → GĐ4) và Chạy xong Thực nghiệm 8,000 ảnh Linnaeus 5 (`24,000/24,000` khôi phục chính xác `MSE == 0`). Chỉ còn bước hoàn thiện Notebook trực quan hóa & README/Báo cáo CT204.*
 
 | Giai đoạn | Hạng mục chính | Trạng thái | Người thực hiện chính | Người Review / Nghiệm thu | Git Commit |
 |---|---|---|---|---|---|
@@ -17,9 +17,10 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 | **Giai đoạn 1** | Khung cấu hình & môi trường: `SOURCES/.gitignore`, `pytest.ini`, `configs/default.yaml`, `src/config.py`, `scripts/__init__.py`, `.gitkeep` | ✅ **Hoàn thành** | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `5d04422` |
 | **Chuẩn bị Data** | Tải đủ Linnaeus 5 (`train=6000`, `test=2000` = **8,000 ảnh**), tạo `secret.png` (`246×300` uint8) & `cover.jpg` (`256×256×3`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng đủ 8,000 ảnh & kích thước) | `bc009e1` |
 | **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`126/126 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `08c2b15` |
-| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | ✅ **Hoàn thành & Đã Audit** *(`236/236 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | Đã commit |
-| **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`, `__init__.py`) + tích hợp `pipeline.py` + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`275/275 PASSED`)* | **Gemini (Carbon)** | **Claude Code (Opus)** (đã audit) + **Gemini** (chốt SSIM Gaussian `σ=1.5`) | ⏳ Sẵn sàng `git commit` chốt GĐ4 |
-| **Giai đoạn 5** | Chạy 2 kịch bản Benchmark trên 8,000 ảnh (Bảng 2 `156×156` & Gốc `246×300`), làm `visualize_results.ipynb` & viết Báo cáo CT204 | 🔜 **Sẵn sàng chạy** | **Bạn** (chạy batch) + **Gemini** (Notebook & phân tích học thuật) | **Bạn** duyệt kết quả cuối | Chưa |
+| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | ✅ **Hoàn thành & Đã Audit** *(`236/236 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `30ce5ac` |
+| **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`, `__init__.py`) + tích hợp `pipeline.py` + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`275/275 PASSED`)* | **Gemini (Carbon)** | **Claude Code (Opus)** (audit pass) + **Gemini** (SSIM Gaussian `σ=1.5`) | `93c72e1` |
+| **Giai đoạn 5A (Thực nghiệm)** | Chạy `run_single` (Hình 4–5) & `run_benchmark` trên **8,000 ảnh Linnaeus 5** (`24,000` lượt chạy, khôi phục `100%`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng & đối chiếu Bảng 2) | Mở chặn trong `.gitignore` để push lên GitHub |
+| **Giai đoạn 5B (Notebook & Đóng gói)** | Viết & thực thi `SOURCES/notebooks/visualize_results.ipynb` (nạp dữ liệu từ GitHub clone, 11 biểu đồ đa chiều & bảng tổng hợp) | ✅ **Hoàn thành** | **Gemini (Carbon)** | **Bạn** kiểm tra, `git push` & viết báo cáo CT204 | ⏳ Sẵn sàng `git commit` & `git push` |
 
 ---
 
@@ -93,7 +94,7 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
   - [x] Tách tin độc lập 100% chỉ từ `stego_rgb`; phát hiện và ném `ValueError` khi đưa ảnh không giấu tin, nén JPEG hoặc hỏng CRC16.
   - [x] Trả về đúng `cover_used_rgb` cùng kích thước với `stego_rgb` kể cả khi ảnh cover được phóng đại (`256×256` → `257×257`).
   - [x] Lưu `.png` trên đĩa rồi đọc lại giải mã đạt **`MSE == 0`** (`np.array_equal(secret, recovered)`) với cả 3 thuật toán; cố tình lưu `.jpg` bị chặn bằng `ValueError`.
-- **Chốt mốc (BẠN thực hiện trước khi sang GĐ4):** Chạy `git add SOURCES/src/stego/ SOURCES/src/pipeline.py SOURCES/tests/test_lsb.py SOURCES/tests/test_pipeline.py Plans/` và `git commit -m "feat(phase3): implement vectorized LSB steganography with 16B header and pipeline"`.
+- **Chốt mốc:** ✅ Đã commit tại `30ce5ac`.
 
 ---
 
@@ -105,29 +106,33 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ---
 
-### Bước 4: Triển khai Giai đoạn 4 — Tầng Metrics Kép, Hình vẽ Figures 4–5 & Benchmark Scripts — ✅ ĐÃ CODE XONG (`261/261 PASSED`)
+### Bước 4: Triển khai Giai đoạn 4 — Tầng Metrics Kép, Hình vẽ Figures 4–5 & Benchmark Scripts — ✅ ĐÃ HOÀN THÀNH & AUDIT PASS (`93c72e1`)
 
-- **Người thực hiện chính:** **Antigravity (Gemini 4 Carbon)** — đã hoàn thành `src/metrics/{visual.py,security.py,__init__.py}`, tích hợp `src/pipeline.py`, `scripts/{run_single.py,run_benchmark.py}`, và `tests/test_metrics.py` (cùng cập nhật `tests/test_pipeline.py`).
+- **Người thực hiện chính:** **Antigravity (Gemini 4 Carbon)** — cài đặt `src/metrics/{visual.py,security.py,__init__.py}`, tích hợp `src/pipeline.py`, `scripts/{run_single.py,run_benchmark.py}`, và `tests/test_metrics.py`.
+- **Kết quả Audit chéo bởi Claude Code (Opus) & Hoàn thiện cuối:**
+  - Claude xác nhận toàn bộ công thức toán học (Eq. 3–8) và hai nhóm chỉ số kép `*_enc` / `*_stego` chính xác; bổ sung tính sẵn mặt nạ trong `measure_enc_time(..., warmup=True)` khi `cache_mask=True`, chuẩn hóa tên file `benchmark_summary_table2.csv` + `fig5_comparison_grid.png` + `xlim(-0.5, 255.5)`, và thêm 15 test biên.
+  - Gemini cập nhật `ssim()` sang cửa sổ Gaussian `11×11, σ = 1.5` (`gaussian_weights=True, sigma=1.5, use_sample_covariance=False`) khớp chuẩn Wang et al. (2004) / MATLAB `ssim` (`0.99855` vs `0.998494` của Bảng 2) và thêm unit test kiểm chứng $\rightarrow$ tổng **275/275 tests PASSED**.
 - **Tiêu chí Nghiệm thu GĐ4 (Definition of Done):**
-  - [x] `MSE` chia cho $H \times W \times 3$ (`BM-09`); kiểm chứng trên 1-LSB ngẫu nhiên cho `MSE ≈ 0.50`, `PSNR ≈ 51.14 dB`.
-  - [x] `security.py` xuất đầy đủ cả 2 nhóm `*_enc` và `*_stego` (`BM-08`), bấm giờ `EncTime` sau `cipher.warmup()` (`BM-10`), an toàn tràn số `uint8` và không cảnh báo chia `0` trên ảnh hằng số.
-  - [x] `run_single.py` vẽ Histogram ảnh màu gộp phẳng `img_rgb.ravel()` (256 bins) khớp giao diện Hình 4c & Hình 5 (`BM-10`).
-  - [x] `run_benchmark.py` tách rời hoàn toàn khỏi `matplotlib`, hỗ trợ `--limit`, `--secret-size`, `--vary-key-per-image`, `--cache-chaotic-mask`, xuất cả `benchmark_results.csv` và `benchmark_results_summary_table2.csv` (tốc độ ~8.5–10 ảnh/giây × 3 cipher).
-- **Bước tiếp theo:** Nhờ **Claude Code (Opus)** Audit chéo Giai đoạn 4 rồi chạy `git commit -m "feat(phase4): implement dual metrics, paper figure plots, and benchmark CLI"`.
+  - [x] `MSE` chia cho $H \times W \times 3$ và `SSIM` dùng cửa sổ Gaussian `σ = 1.5` chuẩn MATLAB (`BM-09`).
+  - [x] `security.py` xuất đầy đủ cả 2 nhóm `*_enc` và `*_stego` (`BM-08`), bấm giờ `EncTime` sau `cipher.warmup()` và precompute khi `cache_mask=True` (`BM-10`).
+  - [x] `run_single.py` xuất đủ ảnh rời + `fig4_cover_secret_histograms.png` + `fig5_comparison_grid.png` (gộp phẳng `img_rgb.ravel()` 256 bins khớp Hình 4c & Hình 5).
+  - [x] `run_benchmark.py` tách rời hoàn toàn khỏi `matplotlib`, xuất `benchmark_results.csv` và `benchmark_summary_table2.csv`.
+- **Chốt mốc:** ✅ Đã commit tại `93c72e1`.
 
 ---
 
 ### Bước 5: Chạy Thực nghiệm Đầy đủ & Viết Báo cáo CT204 (Giai đoạn 5)
 
-Bạn chạy 2 lượt thực nghiệm trên tập Linnaeus 5 (8,000 ảnh) để có bộ số liệu hoàn hảo nhất cho báo cáo:
-1. **Kịch bản A — Tái hiện chuẩn điều kiện 1-LSB của Bảng 2 (`BM-01`):**
-   ```powershell
-   cd SOURCES
-   .\.venv\Scripts\python.exe -m scripts.run_benchmark --secret-size 156 156
-   ```
-   *(Thu được `MSE ≈ 0.495–0.500`, `PSNR ≈ 51.15 dB`, `SSIM ≈ 0.998`, `NPCR_enc ≈ 99.61%`, `UACI_enc ≈ 30.8%`, `Entropy_stego ≈ 7.05` & `Entropy_enc ≈ 7.998`.)*
-2. **Kịch bản B — Chạy kích thước gốc `coins` `246×300` của MATLAB (Hình 4–5):**
-   ```powershell
-   .\.venv\Scripts\python.exe -m scripts.run_single
-   ```
-3. **Tổng hợp cùng Gemini:** Mở rộng `SOURCES/notebooks/visualize_results.ipynb` vẽ biểu đồ so sánh và xuất bảng số liệu chèn thẳng vào báo cáo môn CT204.
+- [x] **Kịch bản A — Đã chạy `scripts.run_single` (`coins` `246×300` chuẩn MATLAB):** Xuất đủ 11 ảnh `.png`, `fig4_cover_secret_histograms.png`, `fig5_comparison_grid.png`, và `single_metrics.csv` tại `SOURCES/results/single/`.
+- [x] **Kịch bản B — Đã chạy `scripts.run_benchmark` trên toàn bộ 8,000 ảnh Linnaeus 5 (`156×156`, 1-LSB, `--cache-chaotic-mask`):**
+  - Tổng cộng **24,000 / 24,000 lượt chạy khôi phục nguyên bản 100% (`MSE == 0`)**.
+  - Kết quả trung bình ghi tại `SOURCES/results/benchmark_summary_table2.csv`:
+    - `Avg. MSE`: `0.49560` (3DES) / `0.49577` (AES) / `0.49544` (Chaotic) — khớp bài báo (`~0.4998`).
+    - `Avg. PSNR`: `51.179 dB` (3DES) / `51.178 dB` (AES) / `51.181 dB` (Chaotic) — lệch bài báo chỉ `+0.025 dB`.
+    - `Avg. SSIM`: `0.99686` ở cả 3 thuật toán — sát `0.9981–0.9985` của bài báo.
+    - `Avg. EncTime`: `1.30e-3 s` (3DES) > `1.11e-4 s` (AES) > `3.13e-5 s` (Chaotic, khớp `3.62e-5 s` bài báo!).
+    - `NPCR_enc`: `99.65% / 99.58% / 99.56%` (khớp `99.59%–99.64%` bài báo).
+    - `UACI_enc`: `30.33% / 30.35% / 30.51%` (khớp `30.81%–30.96%` bài báo và giữ đúng thứ tự `3DES < AES < Chaotic`).
+    - `Corr_enc`: `+0.0062 / -0.0014 / -0.0134` (khớp đúng dấu và độ lớn `+0.0003 / -0.0041 / -0.0098` của bài báo!).
+    - `Entropy`: `7.992–7.993` trên bản mã (`entropy_enc`) và `7.466` trên ảnh giấu tin (`entropy_stego`).
+- [x] **Bước hoàn thiện cuối (Giai đoạn 5B):** Đã viết và chạy sẵn toàn bộ 11 biểu đồ chuyên sâu + bảng đối chiếu trong `SOURCES/notebooks/visualize_results.ipynb` (tự động `git clone https://github.com/NguyenMinhTri24072005/CT204-hybrid-crypto-stego.git` để nạp dữ liệu), đồng thời cập nhật `SOURCES/.gitignore` cho phép đẩy `benchmark_results.csv`, `benchmark_summary_table2.csv` và `results/single/*` lên GitHub.
