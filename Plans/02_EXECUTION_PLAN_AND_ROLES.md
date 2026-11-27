@@ -9,16 +9,16 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
 
 ## 1. Bảng Theo dõi Trạng thái Dự án Hiện tại (Project Dashboard)
 
-*Cập nhật: 27/11/2026 — Đã hoàn thành Giai đoạn 1, Chuẩn bị đầy đủ Dataset 8,000 ảnh, và Hoàn thành + Audit Pass Giai đoạn 2 (`126/126 tests`).*
+*Cập nhật: 27/11/2026 — Đã hoàn thành Giai đoạn 1, Dataset 8,000 ảnh, Giai đoạn 2 (`08c2b15`), và Hoàn thành + Audit Pass Giai đoạn 3 (`236/236 tests`).*
 
 | Giai đoạn | Hạng mục chính | Trạng thái | Người thực hiện chính | Người Review / Nghiệm thu | Git Commit |
 |---|---|---|---|---|---|
 | **Khởi tạo & Thiết kế** | Quét bài báo `Docs/145987.pdf`, tạo `.venv` Python 3.12.8, `CLAUDE.md`, `.antigravity/rules.md`, bộ `Plans/` (Spec + Execution Plan + 10 Điểm mù ADR) | ✅ **Hoàn thành** | Bạn + Claude + Gemini | Bạn | `5d04422` |
 | **Giai đoạn 1** | Khung cấu hình & môi trường: `SOURCES/.gitignore`, `pytest.ini`, `configs/default.yaml`, `src/config.py`, `scripts/__init__.py`, `.gitkeep` | ✅ **Hoàn thành** | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `5d04422` |
 | **Chuẩn bị Data** | Tải đủ Linnaeus 5 (`train=6000`, `test=2000` = **8,000 ảnh**), tạo `secret.png` (`246×300` uint8) & `cover.jpg` (`256×256×3`) | ✅ **Hoàn thành** | **Bạn** | **Gemini** (đã kiểm chứng đủ 8,000 ảnh & kích thước) | `bc009e1` |
-| **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`126/126 PASSED`)* | **Claude Code (Opus)** | **Gemini** (đã review code & đo thử `EncTime`) | ⏳ Chờ bạn `git commit` chốt GĐ2 |
-| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | 🔜 **Sắp làm ngay** | **Claude Code (Opus)** | **Gemini** kiểm tra edge-cases & `MSE == 0` | Chưa |
-| **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`) + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | ⏳ Chờ GĐ3 | **Gemini (Neon/Carbon)** *hoặc* **Claude** | Agent còn lại review công thức toán học | Chưa |
+| **Giai đoạn 2** | Tầng Mã hóa (`src/crypto/base.py`, `des3_cipher.py`, `aes_cipher.py`, `chaotic_cipher.py`, `__init__.py`) + `tests/test_crypto.py` theo `BM-03, BM-04, BM-05, BM-10` | ✅ **Hoàn thành & Đã Audit** *(`126/126 PASSED`)* | **Claude Code (Opus)** | **Gemini** (pass) + **Bạn** | `08c2b15` |
+| **Giai đoạn 3** | Tầng Giấu tin LSB vector hóa (`src/stego/lsb.py` với Header 16B & auto scale-up) + `src/pipeline.py` + `tests/test_lsb.py` & `tests/test_pipeline.py` theo `BM-02, BM-06, BM-07` | ✅ **Hoàn thành & Đã Audit** *(`236/236 PASSED`)* | **Claude Code (Opus)** | **Gemini** (đã kiểm chứng AST không vòng lặp & `MSE == 0`) | ⏳ Chờ bạn `git commit` chốt GĐ3 |
+| **Giai đoạn 4** | Tầng Metrics kép (`src/metrics/visual.py`, `security.py`) + tích hợp `pipeline.py` + Scripts (`run_single.py`, `run_benchmark.py`) + `tests/test_metrics.py` theo `BM-01, BM-08, BM-09, BM-10` | 🔜 **Sắp làm ngay** | **Gemini (Neon/Carbon)** *hoặc* **Claude** | Agent còn lại review công thức toán học | Chưa |
 | **Giai đoạn 5** | Chạy 2 kịch bản Benchmark trên 8,000 ảnh (Bảng 2 `156×156` & Gốc `246×300`), làm `visualize_results.ipynb` & viết Báo cáo CT204 | ⏳ Chờ GĐ4 | **Bạn** (chạy batch) + **Gemini** (Notebook & phân tích học thuật) | **Bạn** duyệt kết quả cuối | Chưa |
 
 ---
@@ -73,22 +73,27 @@ Tài liệu này là **bảng điều khiển trung tâm (Master Tracker)** dàn
   - [x] `DES3Cipher` từ chối khóa suy biến (`K1 == K2` hoặc `K2 == K3`, kể cả sau `adjust_key_parity`).
   - [x] `ChaoticCipher` chạy đúng cả `cache_mask=False` (mặc định) và `cache_mask=True`, có `warmup()`, xử lý tốt `b""` và ảnh `246×300` / `303×384`.
   - [x] `.\.venv\Scripts\pytest.exe tests/test_crypto.py -v` đạt **100% PASSED** (`126/126`).
-- **Chốt mốc (BẠN thực hiện trước khi sang GĐ3):** Chạy `git add SOURCES/src/crypto/ SOURCES/tests/test_crypto.py Plans/` và `git commit -m "feat(phase2): implement 3DES, AES, and Chaotic-ECC ciphers with unit tests"`.
+- **Chốt mốc:** ✅ Đã commit tại `08c2b15`.
 
 ---
 
-### Bước 2: Triển khai Giai đoạn 3 — Tầng Giấu tin LSB & Pipeline khép kín
+### Bước 2: Triển khai Giai đoạn 3 — Tầng Giấu tin LSB & Pipeline khép kín — ✅ ĐÃ HOÀN THÀNH & AUDIT PASS
 
-- **Người thực hiện chính:** **Claude Code (Opus)**.
-- **Phạm vi file:** `SOURCES/src/stego/lsb.py`, `SOURCES/src/pipeline.py`, `SOURCES/tests/test_lsb.py`, `SOURCES/tests/test_pipeline.py`.
-- **Prompt mẫu giao việc GĐ3:**
-  > *"Hãy đọc kỹ Mục 3.2 của `Plans/01_TECHNICAL_SPEC.md` và các quyết định `BM-02`, `BM-06`, `BM-07` trong `Plans/03_TECHNICAL_BLIND_SPOTS_AND_DECISIONS.md`. Triển khai Giai đoạn 3 (`src/stego/lsb.py`, `src/pipeline.py`, `tests/test_lsb.py`, `tests/test_pipeline.py`): đóng gói Header 16-byte (`>4sBBHHIH`, magic `HCST` + CRC16) ở `1-LSB` tại `flat[0:128]`, nhúng Payload từ `flat[128:]` bằng phép toán bitwise NumPy vector hóa 100% không vòng lặp, tự động chọn `num_lsb` trong `{1,2,3}` và auto scale-up bằng `cv2.INTER_CUBIC` khi vượt 3-LSB (trả về cả `cover_used_rgb` trong `EmbedResult`), ép định dạng lossless `.png`. Chạy `.\.venv\Scripts\pytest.exe -v` pass 100%."*
+- **Người thực hiện chính:** **Claude Code (Opus)** — đã hoàn thành `src/stego/lsb.py`, `src/stego/__init__.py`, `src/pipeline.py`, `tests/test_lsb.py`, `tests/test_pipeline.py`.
+- **Kết quả Audit độc lập bởi Gemini (27/11/2026):**
+  - Chạy lại toàn bộ `.\.venv\Scripts\pytest.exe -v`: **236/236 PASSED (4.40s)** (126 test GĐ2 + 110 test GĐ3).
+  - Kiểm tra AST xác nhận 0 vòng lặp Python (`for`/`while`/comprehension) trong `lsb.py`, không tràn số `uint8` kể cả ở `k = 8`.
+  - Dùng `np.fromfile` + `cv2.imdecode` / `cv2.imencode` + `buf.tofile` giúp an toàn 100% với đường dẫn tiếng Việt và dấu cách trên Windows.
+  - Kiểm chứng thực tế trên cặp ảnh mẫu thật (`cover.jpg` + `secret.png`):
+    - Cỡ gốc `246×300`: tự động chọn `num_lsb = 3`, scale-up từ `256×256` lên đúng `(257, 257, 3)`, `MSE ≈ 10.45, PSNR ≈ 37.94 dB`, khôi phục `MSE == 0`.
+    - Cỡ Bảng 2 `156×156`: tự động chọn `num_lsb = 1`, giữ nguyên `(256, 256, 3)`, đạt **`MSE ≈ 0.495, PSNR ≈ 51.18 dB`** (khớp lý thuyết và sát sạt Bảng 2!), khôi phục `MSE == 0`.
+  - **Phê duyệt 2 quyết định bổ sung của Claude:** (1) `run_from_config` chuẩn hóa ảnh cover đầu vào khác cỡ về `stego.cover_size` (`256×256`) bằng `INTER_AREA` (ảnh Linnaeus 5 giữ nguyên không chạm); (2) Định dạng Header hỗ trợ `num_lsb ∈ 1..8`, còn chính sách nhúng giới hạn bởi `stego.max_lsb = 3`.
 - **Tiêu chí Nghiệm thu GĐ3 (Definition of Done):**
-  - [ ] Không có vòng lặp Python duyệt pixel/bit trong `lsb.py`.
-  - [ ] Tách tin độc lập 100% chỉ từ `stego_rgb`; phát hiện và ném `ValueError` khi đưa ảnh không giấu tin hoặc hỏng CRC16.
-  - [ ] Trả về đúng `cover_used_rgb` cùng kích thước với `stego_rgb` kể cả khi ảnh cover được phóng đại (ví dụ với `coins` `246×300` phóng đại từ `256×256` lên `257×257`).
-  - [ ] Lưu `.png` trên đĩa rồi đọc lại giải mã đạt **`MSE == 0`** (`np.array_equal(secret, recovered)`) với cả 3 thuật toán; cố tình lưu `.jpg` bị chặn bằng `ValueError`.
-- **Chốt mốc:** Bạn chạy `git commit -m "feat(phase3): implement vectorized LSB steganography with 16B header and pipeline"`.
+  - [x] Không có vòng lặp Python duyệt pixel/bit trong `lsb.py` (đã có test AST tự động bảo vệ).
+  - [x] Tách tin độc lập 100% chỉ từ `stego_rgb`; phát hiện và ném `ValueError` khi đưa ảnh không giấu tin, nén JPEG hoặc hỏng CRC16.
+  - [x] Trả về đúng `cover_used_rgb` cùng kích thước với `stego_rgb` kể cả khi ảnh cover được phóng đại (`256×256` → `257×257`).
+  - [x] Lưu `.png` trên đĩa rồi đọc lại giải mã đạt **`MSE == 0`** (`np.array_equal(secret, recovered)`) với cả 3 thuật toán; cố tình lưu `.jpg` bị chặn bằng `ValueError`.
+- **Chốt mốc (BẠN thực hiện trước khi sang GĐ4):** Chạy `git add SOURCES/src/stego/ SOURCES/src/pipeline.py SOURCES/tests/test_lsb.py SOURCES/tests/test_pipeline.py Plans/` và `git commit -m "feat(phase3): implement vectorized LSB steganography with 16B header and pipeline"`.
 
 ---
 

@@ -253,9 +253,10 @@ def extract(stego_rgb: np.ndarray) -> tuple[bytes, tuple[int, int], int]:
     Ném ValueError nếu ảnh quá nhỏ (< 128 kênh), sai magic 'HCST', sai CRC16, hoặc tràn biên.
     """
 ```
-- Trong `src/pipeline.py`:
-  - Hàm `save_stego_png(path: Path, stego_rgb: np.ndarray)` bắt buộc kiểm tra `path.suffix.lower() == ".png"` (ném `ValueError` nếu lưu `.jpg`/`.jpeg`).
-  - Kết nối khép kín `encrypt -> embed -> extract -> decrypt -> reshape` và kiểm chứng khôi phục nguyên bản.
+- Trong `src/pipeline.py` (các hàm đã chốt từ Giai đoạn 3):
+  - I/O an toàn Unicode Windows (`np.fromfile` + `cv2.imdecode` / `cv2.imencode` + `tofile`): `read_rgb(path, size=None)`, `read_gray(path, size=None)`, `save_stego_png(path, stego_rgb)` (bắt buộc đuôi `.png`).
+  - Nghiệp vụ: `hide(secret, cover_rgb, cipher, ...)`, `reveal(stego_rgb, cipher)`, `run_pipeline(...) -> PipelineResult`, `run_from_config(...) -> PipelineResult`.
+  - Ở Giai đoạn 4: tích hợp bấm giờ `enc_time_s` quanh `cipher.encrypt(...)` (sau `warmup` khi bật) và điền đầy đủ `PipelineResult.metrics` (mặc định `compute_metrics: bool = True`).
 
 ---
 
