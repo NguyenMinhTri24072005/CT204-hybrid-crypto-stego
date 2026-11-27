@@ -17,7 +17,7 @@
 | **BM-06** | Không có cơ chế truyền Metadata (`num_lsb`, kích thước ảnh, độ dài mã) sang phía nhận | Thiết kế **Header nhị phân cố định 16-byte (128 bit)** có `magic="HCST"` + `CRC16` ở `1-LSB` tại `flat[0:128]`; Payload từ `flat[128:]` | GĐ3 |
 | **BM-07** | Không nêu công thức phóng đại Cover khi tràn 3-LSB và ảnh gốc đối chiếu tính MSE | Tăng `num_lsb` `1 → 2 → 3` trước; nếu tràn 3-LSB thì giữ `num_lsb=3`, phóng đại đẳng hướng bằng `cv2.INTER_CUBIC`; tính MSE giữa `cover_used` và `stego` | GĐ3, GĐ4 |
 | **BM-08** | Mâu thuẫn đối tượng đo `Entropy`, `NPCR`, `UACI`, `Correlation` (Encrypted vs Stego) ở Bảng 2 | Tính và xuất **song song cả 2 nhóm độ đo** (`*_enc` và `*_stego`) kèm bảng ghép "Table 2 Aligned View" | GĐ4, GĐ5 |
-| **BM-09** | Mẫu số `MSE` ghi $M \times N$ cho ảnh màu; `Correlation` mô tả 2 kiểu khác nhau | `MSE` chia cho $H \times W \times 3$ (khớp `immse` MATLAB); cài cả `cross_correlation` (trung bình 3 kênh RGB / 2D) lẫn `adjacent_pixel_correlation` | GĐ4 |
+| **BM-09** | Mẫu số `MSE` ghi $M \times N$ cho ảnh màu; cửa sổ `SSIM`; `Correlation` mô tả 2 kiểu | `MSE` chia $H \times W \times 3$; `SSIM` dùng cửa sổ Gaussian `σ=1.5` chuẩn MATLAB/Wang2004; cài cả `cross_correlation` lẫn `adjacent_pixel_correlation` | GĐ4 |
 | **BM-10** | Cách vẽ Histogram ảnh màu RGB (Hình 4c & 5) và phạm vi đo `EncTime` của Chaotic | Vẽ Histogram RGB gộp phẳng `img_rgb.ravel()` (256 bins); `ChaoticCipher` mặc định `cache_mask=False` (sau `warmup()`) nhưng hỗ trợ tùy chọn `cache_mask=True` | GĐ2, GĐ4 |
 
 ---

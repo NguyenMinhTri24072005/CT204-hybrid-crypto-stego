@@ -268,7 +268,7 @@ So sánh giữa `cover_used_rgb` và `stego_rgb` (cùng kích thước `(H, W, 3
   $$\text{MSE} = \frac{1}{H \cdot W \cdot C} \sum \left(\text{float64}(I_a) - \text{float64}(I_b)\right)^2$$
   *(Chia cho tổng phần tử $H \times W \times 3$ trên ảnh RGB, tương đương chính xác `immse` của MATLAB.)*
 - **`psnr(img_a: np.ndarray, img_b: np.ndarray) -> float`:** $10 \log_{10}(255^2 / \text{MSE})$ (trả về `float("inf")` khi $\text{MSE} == 0$).
-- **`ssim(img_a: np.ndarray, img_b: np.ndarray) -> float`:** `skimage.metrics.structural_similarity(..., data_range=255, channel_axis=-1)` cho ảnh 3D (hoặc `channel_axis=None` cho ảnh 2D).
+- **`ssim(img_a: np.ndarray, img_b: np.ndarray) -> float` (`BM-09`):** Dùng cửa sổ Gaussian `11×11` chuẩn Wang et al. (2004) / MATLAB `ssim` (`structural_similarity(..., data_range=255, channel_axis=-1, gaussian_weights=True, sigma=1.5, use_sample_covariance=False)`) cho ảnh có kích thước `>= 11×11` (fallback sang cửa sổ đều lẻ nếu `3 <= min(H, W) < 11`).
 
 #### 3.3.2 `src/metrics/security.py` (Quyết định `BM-08`, `BM-09`, `BM-10`)
 - **`measure_enc_time(cipher: BaseCipher, plaintext: bytes, *, warmup: bool = True) -> tuple[bytes, float]`:**

@@ -1,4 +1,4 @@
-"""End-to-end pipeline: image I/O + crypto + LSB stego.
+"""End-to-end pipeline: image I/O + crypto + LSB stego + visual/security metrics.
 
     secret (H_s, W_s) uint8 -> tobytes (C-order) -> cipher.encrypt -> embed -> stego .png
     stego .png -> extract -> cipher.decrypt -> reshape (H_s, W_s) -> recovered secret
@@ -6,8 +6,6 @@
 All arrays are RGB / C-order inside the program (BM-02); BGR <-> RGB conversion happens only
 in the I/O helpers. Images are read/written via ``cv2.imdecode``/``imencode`` so Windows
 paths with spaces or non-ASCII characters work.
-
-Phase 4 hook: ``PipelineResult.metrics`` is left empty here; src/metrics fills it in.
 """
 
 from __future__ import annotations
@@ -20,9 +18,11 @@ import cv2
 import numpy as np
 
 from src.crypto import BaseCipher, ciphertext_to_image_view, create_cipher
+from src.metrics import compute_all_metrics, measure_enc_time
 from src.stego.lsb import EmbedResult, embed, extract
 
 LOSSLESS_SUFFIX = ".png"
+MATLAB_COINS_SHAPE = (246, 300)  # BM-01: H=246, W=300
 
 
 # ------------------------------------------------------------------------------- I/O
@@ -68,6 +68,37 @@ def save_stego_png(path: str | Path, stego_rgb: np.ndarray) -> Path:
     return path
 
 
+def save_gray_png(path: str | Path, gray: np.ndarray) -> Path:
+    """Write a 2D uint8 grayscale image as lossless .png (Unicode-safe on Windows)."""
+    path = Path(path)
+    if path.suffix.lower() != LOSSLESS_SUFFIX:
+        raise ValueError(f"grayscale images must be saved as .png, got {path.name!r}")
+    arr = np.asarray(gray)
+    if arr.dtype != np.uint8 or arr.ndim != 2:
+        raise ValueError(f"grayscale image must be (H, W) uint8, got {arr.shape} {arr.dtype}")
+    ok, buf = cv2.imencode(LOSSLESS_SUFFIX, np.ascontiguousarray(arr, dtype=np.uint8))
+    if not ok:
+        raise ValueError(f"PNG encoding failed for {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    buf.tofile(path)
+    return path
+
+
+def ensure_secret_gray(secret_path: str | Path, size: tuple[int, int] | None = None) -> np.ndarray:
+    """Load grayscale secret; if missing on disk, synthesize MATLAB 246x300 coins (BM-01)."""
+    path = Path(secret_path)
+    if not path.is_file():
+        from skimage import data as skdata
+
+        coins = cv2.resize(
+            skdata.coins(),
+            (MATLAB_COINS_SHAPE[1], MATLAB_COINS_SHAPE[0]),
+            interpolation=cv2.INTER_AREA,
+        )
+        save_gray_png(path, coins)
+    return read_gray(path, size=size)
+
+
 # ---------------------------------------------------------------------- crypto+stego
 def _secret_bytes(secret: np.ndarray) -> bytes:
     secret = np.asarray(secret)
@@ -111,7 +142,8 @@ class PipelineResult:
     stego_rgb: np.ndarray  # image actually decoded (re-read from disk when saved)
     recovered: np.ndarray  # (H_s, W_s) uint8
     stego_path: Path | None = None
-    metrics: dict[str, float] = field(default_factory=dict)  # filled by Phase 4
+    enc_time_s: float = 0.0
+    metrics: dict[str, float] = field(default_factory=dict)
 
     @property
     def cover_used_rgb(self) -> np.ndarray:
@@ -133,10 +165,14 @@ def run_pipeline(
     max_lsb: int = 3,
     interpolation: str = "cubic",
     stego_path: str | Path | None = None,
+    compute_metrics: bool = True,
+    warmup: bool = True,
 ) -> PipelineResult:
-    """encrypt -> embed -> (save .png -> reload) -> extract -> decrypt -> reshape."""
-    ciphertext, result = hide(
-        secret, cover_rgb, cipher, max_lsb=max_lsb, interpolation=interpolation
+    """encrypt (timed) -> embed -> (save .png -> reload) -> extract -> decrypt -> metrics."""
+    plaintext = _secret_bytes(secret)
+    ciphertext, enc_time_s = measure_enc_time(cipher, plaintext, warmup=warmup)
+    result = embed(
+        cover_rgb, ciphertext, secret.shape, max_lsb=max_lsb, interpolation=interpolation
     )
     stego = result.stego_rgb
     saved: Path | None = None
@@ -144,15 +180,29 @@ def run_pipeline(
         saved = save_stego_png(stego_path, stego)
         stego = read_rgb(saved)
     recovered = reveal(stego, cipher)
+    encrypted_view = ciphertext_to_image_view(ciphertext, secret.shape)
+    metrics = (
+        compute_all_metrics(
+            secret,
+            encrypted_view,
+            result.cover_used_rgb,
+            stego,
+            enc_time_s=enc_time_s,
+        )
+        if compute_metrics
+        else {}
+    )
     return PipelineResult(
         cipher_name=cipher.name,
         secret=secret,
         ciphertext=ciphertext,
-        encrypted_view=ciphertext_to_image_view(ciphertext, secret.shape),
+        encrypted_view=encrypted_view,
         embed=result,
         stego_rgb=stego,
         recovered=recovered,
         stego_path=saved,
+        enc_time_s=enc_time_s,
+        metrics=metrics,
     )
 
 
@@ -166,6 +216,8 @@ def run_from_config(
     stego_path: str | Path | None = None,
     seed_offset: int = 0,
     cache_chaotic_mask: bool = False,
+    compute_metrics: bool = True,
+    warmup: bool = True,
 ) -> PipelineResult:
     """Run the pipeline with defaults from config (cover: ``paths.sample_dir/cover.jpg``;
     secret: ``secret.path`` resized to ``secret_size`` or ``secret.resize``)."""
@@ -185,4 +237,6 @@ def run_from_config(
         max_lsb=int(stego_cfg["max_lsb"]),
         interpolation=str(stego_cfg.get("scale_up_interpolation", "cubic")),
         stego_path=stego_path,
+        compute_metrics=compute_metrics,
+        warmup=warmup,
     )

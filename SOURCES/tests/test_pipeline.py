@@ -59,7 +59,29 @@ def test_end_to_end_coins_via_png(cfg, secret, cover, name, tmp_path):
     assert res.stego_rgb.shape == res.cover_used_rgb.shape == (257, 257, 3)
     assert np.array_equal(res.stego_rgb, res.embed.stego_rgb)  # PNG is lossless
     assert res.encrypted_view.shape == secret.shape
-    assert res.metrics == {}  # filled in Phase 4
+    expected_metric_keys = {
+        "mse",
+        "psnr",
+        "ssim",
+        "enc_time_s",
+        "npcr_enc",
+        "uaci_enc",
+        "corr_enc",
+        "entropy_enc",
+        "npcr_stego",
+        "uaci_stego",
+        "corr_stego",
+        "entropy_stego",
+    }
+    assert set(res.metrics) == expected_metric_keys
+    assert res.enc_time_s == res.metrics["enc_time_s"] > 0.0
+
+
+def test_compute_metrics_can_be_disabled(cfg, secret, cover):
+    res = run_pipeline(secret, cover, create_cipher("aes", cfg), compute_metrics=False)
+    assert res.is_exact
+    assert res.metrics == {}
+    assert res.enc_time_s > 0.0
 
 
 @pytest.mark.parametrize("name", CIPHER_NAMES)
