@@ -1,0 +1,48 @@
+% ============================== TRANG BÌA ==============================
+\begin{titlepage}
+\setstretch{1.15}%
+\centering
+\vspace*{-0.4cm}
+{\fontsize{13}{17}\selectfont
+ % khung viền đôi vẽ bằng TikZ (overlay: không chiếm chỗ trong dòng chữ)
+ \begin{tikzpicture}[remember picture, overlay]
+   \draw[line width=2.4pt]
+     ($(current page.north west)+(2.4cm,-1.8cm)$) rectangle
+     ($(current page.south east)+(-1.6cm,1.8cm)$);
+   \draw[line width=0.7pt]
+     ($(current page.north west)+(2.58cm,-1.98cm)$) rectangle
+     ($(current page.south east)+(-1.78cm,1.98cm)$);
+ \end{tikzpicture}%
+ BỘ GIÁO DỤC VÀ ĐÀO TẠO\\
+ \textbf{\TenTruong}\\
+ \textbf{\TenKhoa}\par}
+\vspace{4pt}
+\includegraphics[width=2.7cm]{ornament}\par
+\vspace{0.9cm}
+\includegraphics[width=3.6cm]{logo_ctu}\par
+\vspace{1.0cm}
+{\fontsize{15}{20}\selectfont\bfseries
+ BÁO CÁO ĐỒ ÁN HỌC PHẦN\\
+ \TenHocPhan\ (\MaHocPhan)\par}
+\vfill
+{\fontsize{14}{18}\selectfont\bfseries ĐỀ TÀI\par}
+\vspace{8pt}
+{\fontsize{21}{28}\selectfont\bfseries
+ \TenDeTaiDongMot\\ \TenDeTaiDongHai\par}
+\vspace{6pt}
+{\fontsize{13}{17}\selectfont\bfseries (\PhuDeDeTai)\par}
+\vspace{8pt}
+{\small\itshape Tái hiện và phân tích bài báo ``\BaiBaoGoc''\\
+ (S.\,D.~Raut, S.\,P.~Ugale, D.\,M.~Chandwadkar --- ICITSC 2025)\par}
+\vfill
+{\fontsize{13}{18}\selectfont
+\begin{tabular}{@{}l@{\hspace{2.2cm}}l@{}}
+  \textbf{Giảng viên hướng dẫn} & \textbf{Sinh viên thực hiện}\\[2pt]
+  \GiangVien & \SinhVien\\
+             & MSSV: \MSSV\\
+             & Ngành: \Nganh\ -- \Khoa
+\end{tabular}\par}
+\vspace{1.6cm}
+{\fontsize{13}{17}\selectfont \NoiThoiGian\par}
+\vspace*{-0.4cm}
+\end{titlepage}

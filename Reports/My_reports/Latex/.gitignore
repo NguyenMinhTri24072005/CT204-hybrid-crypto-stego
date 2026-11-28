@@ -1,0 +1,19 @@
+# Tệp trung gian của LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lol
+*.lot
+*.out
+*.toc
+*.xdv
+*.synctex.gz
+*.synctex(busy)
+*.run.xml
+*.bcf
+# Kết quả trung gian của script
+tools/__pycache__/

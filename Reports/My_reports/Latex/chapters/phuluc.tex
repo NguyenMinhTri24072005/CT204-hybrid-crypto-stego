@@ -1,0 +1,68 @@
+% =====================================================================
+\chapter{Hướng dẫn cài đặt và sử dụng chương trình}
+\label{app:huongdan}
+% =====================================================================
+
+\section{Cài đặt môi trường}
+
+Chương trình chạy trên Windows với Python 3.12. Từ thư mục \code{SOURCES}, tạo môi trường ảo và cài
+các thư viện cần thiết:
+
+\begin{lstlisting}[style=plain]
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+\end{lstlisting}
+
+Bộ dữ liệu Linnaeus 5 được đặt trong thư mục \path{SOURCES/data/linnaeus5/}, gồm hai thư mục con
+\code{train} và \code{test}, mỗi thư mục chứa năm lớp \code{berry}, \code{bird}, \code{dog},
+\code{flower}, \code{other}. Cặp ảnh mẫu \code{cover.jpg} và \code{secret.png} nằm trong
+\path{SOURCES/data/sample/}.
+
+\section{Chạy kiểm thử và các kịch bản thực nghiệm}
+
+\begin{lstlisting}[style=plain]
+# 347 ca kiem thu tu dong
+.\.venv\Scripts\pytest.exe -q
+# Kich ban A (Hinh 4-5): ket qua trong results/single/
+.\.venv\Scripts\python.exe -m scripts.run_single
+# Kich ban B (Bang 2): ket qua trong results/*.csv
+.\.venv\Scripts\python.exe -m scripts.run_benchmark --secret-size 156 156 --cache-chaotic-mask
+\end{lstlisting}
+
+Các tùy chọn dòng lệnh chính:
+\begin{itemize}
+  \item \code{--secret-size H W}: thay đổi kích thước ảnh bí mật (mặc định giữ $246\times300$);
+  \item \code{--cache-chaotic-mask}: tính sẵn mặt nạ Chaotic, chỉ đo thời gian phép XOR;
+  \item \code{--vary-key-per-image}: dùng khóa khác nhau cho mỗi ảnh trong benchmark;
+  \item \code{--limit N}: chỉ chạy $N$ ảnh đầu tiên (chạy thử nhanh, chỉ \code{run\_benchmark});
+  \item \code{--cover} (chỉ \code{run\_single}), \code{--secret}, \code{--config}: chỉ định ảnh phủ,
+        ảnh bí mật, tệp cấu hình.
+\end{itemize}
+
+\section{Ứng dụng desktop}
+
+\begin{lstlisting}[style=plain]
+# chay giao dien
+.\.venv\Scripts\python.exe app.py
+# kiem tra khoi dong (tu dong dong cua so)
+.\.venv\Scripts\python.exe app.py --smoke
+# dong goi thanh dist\CT204_CryptoStego\
+.\.venv\Scripts\pyinstaller.exe packaging\ct204_app.spec
+\end{lstlisting}
+
+Bản đóng gói chỉ cần giải nén thư mục \code{CT204\_CryptoStego} và chạy
+\code{CT204\_CryptoStego.exe}, không cần cài Python. Ảnh stego luôn được lưu ở định dạng PNG; hệ thống
+từ chối lưu JPEG vì nén mất dữ liệu sẽ phá hủy các bit LSB.
+
+\section{Tái tạo hình ảnh và số liệu trong báo cáo}
+
+Các hình và số liệu bổ sung trong Chương~\ref{chap:vandung} được sinh bởi các script trong thư mục
+\path{Reports/My_reports/Latex/tools}. Chúng chạy bằng môi trường ảo của dự án và không sửa đổi mã
+nguồn lõi:
+
+\begin{lstlisting}[style=plain]
+cd SOURCES
+.\.venv\Scripts\python.exe ..\Reports\My_reports\Latex\tools\make_figures.py
+.\.venv\Scripts\python.exe ..\Reports\My_reports\Latex\tools\make_theory_figures.py
+.\.venv\Scripts\python.exe ..\Reports\My_reports\Latex\tools\run_experiments.py
+\end{lstlisting}

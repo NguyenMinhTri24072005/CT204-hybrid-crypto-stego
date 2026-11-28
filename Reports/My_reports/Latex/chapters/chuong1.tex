@@ -1,0 +1,214 @@
+% =====================================================================
+\chapter{Tổng quan về an toàn và bảo mật thông tin}
+\label{chap:tongquan}
+% =====================================================================
+
+\section{Các khái niệm cơ bản}
+
+Mật mã học (\tn{cryptography}) là ngành khoa học nghiên cứu các kỹ thuật bảo vệ thông tin
+bằng cách biến đổi dữ liệu từ dạng có thể đọc được sang dạng không thể hiểu được đối với
+người không có thẩm quyền. Mục đích của mật mã học là bảo đảm tính bí mật, tính toàn vẹn
+và tính xác thực của thông tin trong quá trình lưu trữ cũng như truyền tải
+\cite{stallings2020, menezes1996}. Ngày nay, mật mã học hiện diện trong hầu hết hoạt động
+số: từ giao thức HTTPS khi duyệt web, giao dịch ngân hàng trực tuyến cho đến việc chia sẻ
+hình ảnh trên mạng xã hội.
+
+\subsection{Mã hóa và giải mã}
+
+\textbf{Mã hóa} (\tn{encryption}) là quá trình dùng một thuật toán $E$ và một khóa $K$ để
+biến bản rõ (\tn{plaintext}) $P$ thành bản mã (\tn{ciphertext}) $C$. \textbf{Giải mã}
+(\tn{decryption}) là quá trình ngược lại, dùng thuật toán $D$ để khôi phục bản rõ từ bản mã:
+\begin{equation}
+  C = E_K(P), \qquad P = D_{K'}(C).
+  \label{eq:enc-dec}
+\end{equation}
+Một hệ mật hoạt động đúng phải thỏa điều kiện $D_{K'}\bigl(E_K(P)\bigr) = P$ với mọi bản rõ
+$P$. Nếu $K' = K$ ta có hệ mật khóa đối xứng; nếu $K' \neq K$ và không thể suy ra $K'$ từ
+$K$ một cách hiệu quả, ta có hệ mật khóa bất đối xứng (khóa công khai).
+
+\subsection{Khóa mã hóa và nguyên lý Kerckhoffs}
+
+Khóa là thông tin bí mật quyết định phép biến đổi cụ thể của thuật toán. Theo
+\textbf{nguyên lý Kerckhoffs} \cite{kerckhoffs1883}, độ an toàn của một hệ mật chỉ được phép
+dựa vào bí mật của khóa, không được dựa vào việc giữ kín thuật toán. Hệ quả trực tiếp là
+không gian khóa phải đủ lớn để chống tấn công vét cạn và khóa phải được sinh, lưu trữ, phân
+phối an toàn. Nguyên lý này sẽ được dùng ở Chương~\ref{chap:vandung} để đánh giá lớp mã hóa
+Chaotic của bài báo, vốn có các tham số được công bố công khai.
+
+\section{Các mục tiêu của an toàn thông tin}
+
+An toàn thông tin hướng đến bảo đảm ba thuộc tính cốt lõi thường gọi là bộ ba \textbf{CIA},
+cùng với thuộc tính chống chối bỏ \cite{stallings2020}:
+\begin{itemize}
+  \item \textbf{Tính bí mật} (\tn{Confidentiality}): thông tin chỉ được truy cập bởi những
+        người có thẩm quyền. Mã hóa là công cụ chính để đạt được tính bí mật.
+  \item \textbf{Tính toàn vẹn} (\tn{Integrity}): thông tin không bị sửa đổi trái phép, hoặc
+        nếu bị sửa đổi thì phải phát hiện được. Công cụ thường dùng là hàm băm mật mã, mã xác
+        thực thông điệp (MAC) và chữ ký số.
+  \item \textbf{Tính sẵn sàng} (\tn{Availability}): hệ thống và dữ liệu luôn sẵn sàng phục
+        vụ người dùng hợp pháp khi cần; mối đe dọa điển hình là tấn công từ chối dịch vụ.
+  \item \textbf{Tính chống chối bỏ} (\tn{Non-repudiation}): người gửi không thể phủ nhận đã
+        gửi và người nhận không thể phủ nhận đã nhận thông tin; công cụ chính là chữ ký số.
+\end{itemize}
+
+Bên cạnh bộ ba CIA, trong bài toán truyền ảnh còn có một yêu cầu đặc thù là \textbf{tính
+không thể nhận biết} (\tn{undetectability}): đối phương không được biết rằng có một thông
+điệp bí mật đang được truyền đi. Đây chính là mục tiêu của kỹ thuật giấu tin trình bày ở
+mục~\ref{sec:giautin}.
+
+\section{Các loại thuật toán mật mã}
+
+\subsection{Mã hóa đối xứng}
+
+Mã hóa đối xứng dùng cùng một khóa bí mật cho cả mã hóa và giải mã. Hai bên liên lạc phải
+chia sẻ trước khóa này qua một kênh an toàn. Ưu điểm lớn nhất của mã hóa đối xứng là tốc độ
+cao, phù hợp để mã hóa khối lượng dữ liệu lớn như hình ảnh hay video \cite{stallings2020}.
+Các thuật toán đối xứng chia thành hai nhóm:
+\begin{itemize}
+  \item \textbf{Mã khối} (\tn{block cipher}): xử lý dữ liệu theo từng khối có kích thước cố
+        định, ví dụ DES và 3DES (khối 64 bit), AES (khối 128 bit). Để mã hóa thông điệp dài
+        hơn một khối, mã khối được dùng kèm một \textbf{chế độ hoạt động} (\tn{mode of
+        operation}) như ECB, CBC, CTR hay GCM \cite{sp80038a}.
+  \item \textbf{Mã dòng} (\tn{stream cipher}): sinh ra một dòng khóa (\tn{keystream}) giả
+        ngẫu nhiên rồi XOR với bản rõ theo từng byte hoặc từng bit, ví dụ RC4, ChaCha20. Các
+        lược đồ mã hóa ảnh dựa trên hệ hỗn loạn cũng thường có cấu trúc của mã dòng.
+\end{itemize}
+
+Chế độ hoạt động ảnh hưởng trực tiếp đến độ an toàn khi mã hóa ảnh. Với chế độ ECB, các khối
+bản rõ giống nhau cho ra các khối bản mã giống nhau nên đường nét của ảnh vẫn lộ ra trên bản
+mã. Chế độ CBC khắc phục điều này bằng cách XOR mỗi khối bản rõ với khối bản mã liền trước
+trước khi mã hóa; đây cũng là chế độ mà bài báo được tái hiện lựa chọn cho cả 3DES và AES.
+
+\subsection{Mã hóa bất đối xứng}
+
+Mã hóa bất đối xứng dùng một cặp khóa: khóa công khai để mã hóa (hoặc xác minh chữ ký) và
+khóa riêng để giải mã (hoặc ký). Hệ RSA dựa trên độ khó của bài toán phân tích số nguyên lớn
+ra thừa số nguyên tố, còn \textbf{mật mã đường cong elliptic} (ECC) dựa trên bài toán logarit
+rời rạc trên nhóm điểm của đường cong elliptic. Với cùng mức an toàn, ECC cần khóa ngắn hơn
+RSA nhiều lần \cite{katz2020}. Mã hóa bất đối xứng chậm hơn đáng kể so với mã đối xứng nên
+trong thực tế thường chỉ dùng để trao đổi khóa phiên và ký số. Bài báo gốc có nhắc đến ECC,
+nhưng như sẽ phân tích ở Chương~\ref{chap:baibao}, thành phần ``ECC'' trong bài báo thực chất
+chỉ là một mặt nạ giả ngẫu nhiên được \emph{mô phỏng}, không có phép toán đường cong nào.
+
+\subsection{Hàm băm mật mã}
+
+Hàm băm mật mã $H$ ánh xạ đầu vào có độ dài tùy ý thành giá trị băm có độ dài cố định
+(ví dụ 256 bit với SHA-256). Một hàm băm mật mã tốt có các tính chất:
+\begin{itemize}
+  \item \textbf{Một chiều}: biết $h$, không thể tìm được $m$ sao cho $H(m) = h$;
+  \item \textbf{Kháng va chạm}: rất khó tìm hai đầu vào $m_1 \neq m_2$ với $H(m_1) = H(m_2)$;
+  \item \textbf{Hiệu ứng tuyết lở}: thay đổi một bit đầu vào làm khoảng một nửa số bit đầu ra
+        thay đổi.
+\end{itemize}
+Trong đề tài này, SHA-256 được dùng để \emph{dẫn xuất khóa} một cách tất định từ hạt giống
+cấu hình hoặc từ mật khẩu người dùng (mục~\ref{sec:caidat}). Cần phân biệt hàm băm mật mã với
+mã kiểm tra dư vòng CRC: CRC chỉ phát hiện lỗi ngẫu nhiên do kênh truyền gây ra, \emph{không}
+chống được sửa đổi có chủ đích vì kẻ tấn công có thể tính lại CRC.
+
+\section{Giấu tin trong ảnh số}
+\label{sec:giautin}
+
+\subsection{Khái niệm và mô hình}
+
+Giấu tin (\tn{steganography}) là kỹ thuật nhúng một thông điệp bí mật vào một vật mang
+(\tn{cover}) như ảnh, âm thanh hay video sao cho sự tồn tại của thông điệp không bị phát
+hiện \cite{johnson1998, cheddad2010}. Mô hình kinh điển của giấu tin là ``bài toán người tù''
+của Simmons \cite{simmons1984}: hai tù nhân muốn trao đổi kế hoạch vượt ngục qua người cai
+ngục; mọi thư từ đều bị đọc, và chỉ cần một dấu hiệu khả nghi là liên lạc bị cắt. Vì vậy
+thông điệp phải được giấu trong những lá thư trông hoàn toàn bình thường. Các thành phần của
+một hệ giấu tin được minh họa ở \hinh{fig:stego-model}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=4mm and 6mm, every node/.append style={font=\footnotesize}]
+  \node[box] (msg) {Thông điệp\\bí mật};
+  \node[box, above=of msg] (cover) {Ảnh phủ\\(\tn{cover})};
+  \node[box, below=of msg] (key) {Khóa giấu tin\\(\tn{stego-key})};
+  \node[pbox, right=9mm of msg, minimum height=13mm] (emb) {Bộ nhúng\\(\tn{embedding})};
+  \node[box, right=of emb] (stego) {Ảnh mang tin\\(\tn{stego})};
+  \node[dbox, right=of stego, minimum height=13mm] (ch) {Kênh công khai\\(bị giám sát)};
+  \node[pbox, right=of ch, minimum height=13mm] (ext) {Bộ trích xuất\\(\tn{extraction})};
+  \node[box, right=of ext] (out) {Thông điệp\\khôi phục};
+  \draw[arr] (cover.east) -| ($(emb.north west)+(-3mm,0)$) -- ($(emb.north west)+(0,0)$);
+  \draw[arr] (msg) -- (emb);
+  \draw[arr] (key.east) -| ($(emb.south west)+(-3mm,0)$) -- ($(emb.south west)+(0,0)$);
+  \draw[arr] (emb) -- (stego);
+  \draw[arr] (stego) -- (ch);
+  \draw[arr] (ch) -- (ext);
+  \draw[arr] (ext) -- (out);
+  \draw[arr, dashed] (key.south) -- ++(0,-3mm) -| node[lbl, pos=0.25, below] {cùng khóa ở phía nhận} (ext.south);
+\end{tikzpicture}}
+\caption{Mô hình tổng quát của một hệ giấu tin}
+\label{fig:stego-model}
+\end{figure}
+
+\subsection{Các yêu cầu đối với một hệ giấu tin}
+
+Một hệ giấu tin trong ảnh được đánh giá theo ba yêu cầu có quan hệ đánh đổi lẫn nhau:
+\begin{itemize}
+  \item \textbf{Tính vô hình} (\tn{imperceptibility}): ảnh mang tin phải giống ảnh phủ đến
+        mức mắt người không phân biệt được, thường đo bằng PSNR và SSIM;
+  \item \textbf{Dung lượng} (\tn{capacity}): số bit có thể nhúng trên mỗi điểm ảnh; tăng dung
+        lượng thường làm giảm tính vô hình;
+  \item \textbf{Độ bền vững} (\tn{robustness}): khả năng giữ được thông điệp khi ảnh bị xử lý
+        như nén, lọc nhiễu, cắt xén.
+\end{itemize}
+Ngoài ra còn yêu cầu \textbf{an toàn trước phân tích giấu tin} (\tn{steganalysis}): các phép
+kiểm định thống kê không được phân biệt ảnh mang tin với ảnh tự nhiên.
+
+\subsection{Phân loại kỹ thuật giấu tin trong ảnh}
+
+Theo miền nhúng, kỹ thuật giấu tin trong ảnh được chia thành \cite{cheddad2010}:
+\begin{itemize}
+  \item \textbf{Miền không gian}: sửa trực tiếp giá trị điểm ảnh. Tiêu biểu là kỹ thuật
+        \textbf{LSB} (\tn{Least Significant Bit}) thay các bit thấp nhất của điểm ảnh bằng bit
+        thông điệp. LSB đơn giản, dung lượng lớn, nhưng rất mong manh trước nén mất dữ liệu.
+  \item \textbf{Miền biến đổi}: nhúng vào hệ số của các phép biến đổi như DCT (nền tảng của
+        JPEG) hoặc DWT; bền vững hơn nhưng dung lượng thấp hơn.
+  \item \textbf{Giấu tin thích nghi}: chọn vị trí nhúng theo độ phức tạp cục bộ của ảnh (vùng
+        có nhiều kết cấu) để giảm khả năng bị phát hiện \cite{holub2014}.
+\end{itemize}
+
+\subsection{Phân tích giấu tin}
+
+Phân tích giấu tin là lĩnh vực đối nghịch, nhằm phát hiện sự tồn tại của thông điệp ẩn. Với
+LSB, hai phương pháp nổi tiếng là \textbf{tấn công thị giác} (quan sát trực tiếp mặt phẳng bit
+thấp nhất) và \textbf{kiểm định $\chi^2$ trên cặp giá trị} (\tn{Pairs of Values}) của Westfeld
+và Pfitzmann \cite{westfeld2000}. Phép kiểm định thứ hai khai thác hiện tượng: khi LSB bị thay
+bằng bit ngẫu nhiên, tần suất của mỗi cặp giá trị $(2k, 2k+1)$ trong histogram bị san bằng.
+Phương pháp RS của Fridrich và cộng sự \cite{fridrich2001} còn ước lượng được độ dài thông
+điệp đã nhúng. Chương~\ref{chap:vandung} sẽ áp dụng kiểm định $\chi^2$ lên 8000 ảnh mang tin để
+đánh giá khả năng bị phát hiện của lược đồ trong bài báo.
+
+\section{Mật mã học và giấu tin: hai lớp bảo vệ bổ sung cho nhau}
+
+Mật mã học và giấu tin giải quyết hai khía cạnh khác nhau của cùng một bài toán.
+\bang{tab:crypto-vs-stego} tóm tắt sự khác biệt giữa hai kỹ thuật.
+
+\begin{table}[H]
+\centering
+\caption{So sánh mật mã học và giấu tin}
+\label{tab:crypto-vs-stego}
+\small
+\begin{tabularx}{\linewidth}{@{}P{3.4cm}LL@{}}
+\toprule
+\thead{Tiêu chí} & \thead{Mật mã học} & \thead{Giấu tin}\\
+\midrule
+Mục tiêu chính & Che giấu \emph{nội dung} thông điệp & Che giấu \emph{sự tồn tại} của thông điệp\\
+Dạng dữ liệu truyền & Bản mã trông như nhiễu ngẫu nhiên, dễ gây chú ý & Ảnh tự nhiên, không gây nghi ngờ\\
+Khi bị phát hiện & Nội dung vẫn an toàn nếu khóa an toàn & Nội dung bị lộ nếu không được mã hóa\\
+Cơ sở an toàn & Độ khó tính toán, không gian khóa & Tính vô hình, khả năng chống phân tích thống kê\\
+Điểm yếu & Thu hút sự chú ý của kẻ tấn công & Không tự bảo vệ nội dung\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Có thể tóm gọn: \emph{mật mã an toàn nhưng không vô hình, còn giấu tin vô hình nhưng không an
+toàn} \cite{raut2026hybrid}. Kết hợp hai kỹ thuật theo trình tự ``mã hóa trước, nhúng sau''
+cho phép tận dụng ưu điểm của cả hai. Nếu ảnh mang tin không bị nghi ngờ, kẻ tấn công không
+biết có gì để tấn công. Nếu bị phát hiện và trích xuất, dữ liệu thu được vẫn chỉ là bản mã
+không có ý nghĩa khi thiếu khóa. Thêm vào đó, bản mã có phân bố bit gần đều nên khi nhúng vào
+LSB sẽ hành xử như nhiễu ngẫu nhiên, giúp các độ đo chất lượng ảnh có thể dự đoán được bằng
+lý thuyết. Đây chính là động lực của khung lai mật mã -- giấu tin được trình bày trong bài
+báo và được tái hiện trong báo cáo này.

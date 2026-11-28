@@ -1,0 +1,229 @@
+% =====================================================================
+%  PREAMBLE — biên dịch bằng XeLaTeX (font hệ thống Times New Roman)
+% =====================================================================
+
+% ---------------------------------------------------------------- cỡ chữ 13pt
+% lớp report chỉ có 10/11/12pt; scrextend (KOMA-Script) đặt lại cỡ chữ gốc thành 13pt
+\usepackage[fontsize=13pt]{scrextend}
+
+% ---------------------------------------------------------------- trang
+\usepackage[a4paper, left=3cm, right=2cm, top=2.5cm, bottom=2.5cm,
+            headheight=15pt, headsep=0.8cm, footskip=1.2cm]{geometry}
+
+% ---------------------------------------------------------------- font & ngôn ngữ
+\usepackage{amsmath, amssymb, mathtools}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Consolas}[Scale=0.88]
+\setmathfont{TeX Gyre Termes Math}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
+\PolyglossiaSetup{vietnamese}{indentfirst=true}  % thụt đầu dòng cả đoạn đầu sau tiêu đề
+
+\usepackage{setspace}
+\setstretch{1.2}
+\usepackage{indentfirst}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{3pt plus 1pt}
+\usepackage{microtype}
+\setlength{\emergencystretch}{3em}  % tránh tràn lề khi dòng có mã nguồn không ngắt được
+\usepackage{adjustbox}
+
+% ---------------------------------------------------------------- màu, hình, bảng
+\usepackage[table]{xcolor}
+\definecolor{ctublue}{HTML}{1F4E8C}
+\definecolor{codebg}{HTML}{F5F7FA}
+\definecolor{codeframe}{HTML}{C9D3E0}
+\definecolor{codekw}{HTML}{1F4E8C}
+\definecolor{codestr}{HTML}{A3361B}
+\definecolor{codecom}{HTML}{5B6B7B}
+\definecolor{tblhead}{HTML}{DCE6F2}
+\definecolor{tblrow}{HTML}{F4F7FB}
+\definecolor{okgreen}{HTML}{15803D}
+\definecolor{badred}{HTML}{B91C1C}
+
+\usepackage{graphicx}
+\graphicspath{{figures/}{figures/common/}{figures/results/}{figures/generated/}{figures/ui/}{figures/paper/}}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small, labelsep=colon, justification=centering, skip=6pt}
+\captionsetup[table]{position=top}
+\DeclareCaptionListFormat{hinh}{\figurename~#1#2:}
+\DeclareCaptionListFormat{bang}{\tablename~#1#2:}
+\captionsetup[figure]{listformat=hinh}
+\captionsetup[table]{listformat=bang}
+\usepackage{subcaption}
+\usepackage{booktabs, array, tabularx, longtable}
+\renewcommand{\arraystretch}{1.18}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{siunitx}
+\sisetup{group-separator={\,}, group-minimum-digits=5, output-decimal-marker={.},
+         detect-all}
+\usepackage{enumitem}
+\setlist{itemsep=1pt, topsep=3pt, parsep=1pt}
+\setlist[itemize,1]{label=--, leftmargin=1.2cm}
+\setlist[itemize,2]{label=+, leftmargin=0.8cm}
+\setlist[enumerate,1]{leftmargin=1.2cm}
+
+% ---------------------------------------------------------------- TikZ
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, fit, backgrounds, shapes.geometric,
+                shapes.misc, matrix, decorations.pathreplacing}
+\tikzset{
+  >={Stealth[length=2.2mm]},
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=8mm,
+              inner sep=4pt, fill=white, font=\small},
+  pbox/.style={box, fill=tblhead},
+  dbox/.style={box, fill=codebg, dashed},
+  xorn/.style={draw, circle, inner sep=0pt, minimum size=6mm, font=\small},
+  lbl/.style={font=\footnotesize, align=center},
+  arr/.style={->, thick},
+}
+\usepackage{bytefield}
+
+% ---------------------------------------------------------------- mã nguồn
+\usepackage{listings}
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize\setstretch{1.0},
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecom}\itshape,
+  numberstyle=\tiny\color{codecom},
+  numbers=left, numbersep=6pt, xleftmargin=1.4em, framexleftmargin=1.2em,
+  backgroundcolor=\color{codebg}, frame=single, rulecolor=\color{codeframe},
+  breaklines=true, columns=fullflexible, keepspaces=true, showstringspaces=false,
+  tabsize=4, aboveskip=6pt, belowskip=4pt, upquote=true,
+  morekeywords={self, True, False, None, as, with},
+}
+\lstdefinestyle{plain}{
+  basicstyle=\ttfamily\footnotesize\setstretch{1.0}, numbers=none, xleftmargin=0pt,
+  framexleftmargin=0pt, commentstyle=\color{codecom}\itshape, morecomment=[l]{\#},
+  backgroundcolor=\color{codebg}, frame=single, rulecolor=\color{codeframe},
+  columns=fullflexible, keepspaces=true, breaklines=true, aboveskip=6pt, belowskip=4pt,
+}
+\lstset{style=py}
+
+% ---------------------------------------------------------------- tiêu đề trang
+\usepackage{fancyhdr}
+\fancypagestyle{noidung}{%
+  \fancyhf{}%
+  \fancyhead[L]{\small\itshape \TenNgan}%
+  \fancyhead[R]{\small\itshape \MaHocPhan}%
+  \fancyfoot[C]{\small\thepage}%
+  \renewcommand{\headrulewidth}{0.4pt}%
+  \renewcommand{\footrulewidth}{0pt}}
+\fancypagestyle{dau}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\small\thepage}%
+  \renewcommand{\headrulewidth}{0pt}}
+
+% ---------------------------------------------------------------- tiêu đề chương / mục
+\makeatletter
+\renewcommand\@makechapterhead[1]{%
+  \vspace*{-6pt}%
+  {\centering\normalfont\fontsize{16}{21}\selectfont\bfseries
+   \ifnum\c@secnumdepth>\m@ne
+     \MakeUppercase{\@chapapp}\ \thechapter:\ %
+   \fi
+   \MakeUppercase{#1}\par}%
+  \vspace{16pt}}
+\renewcommand\@makeschapterhead[1]{%
+  \vspace*{-6pt}%
+  {\centering\normalfont\fontsize{16}{21}\selectfont\bfseries\MakeUppercase{#1}\par}%
+  \vspace{16pt}}
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-2.6ex \@plus -0.8ex \@minus -.2ex}{1.0ex \@plus .2ex}%
+  {\normalfont\fontsize{14}{17}\selectfont\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0.6em}%
+  {-2.2ex \@plus -0.6ex \@minus -.2ex}{0.8ex \@plus .2ex}%
+  {\normalfont\normalsize\bfseries\itshape}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{1.2em}%
+  {-1.8ex \@plus -0.5ex \@minus -.2ex}{0.6ex \@plus .2ex}%
+  {\normalfont\normalsize\itshape}}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\renewcommand\thesubsubsection{\alph{subsubsection}.}
+% đánh số hình/bảng/phương trình theo chương
+\renewcommand\theequation{\thechapter.\arabic{equation}}
+% mục lục: dòng cấp chương in hoa giống tiêu đề chương ("CHƯƠNG 1: ...", "PHỤ LỤC A: ...")
+\def\@chapter[#1]#2{%
+  \ifnum\c@secnumdepth>\m@ne
+    \refstepcounter{chapter}%
+    \typeout{\@chapapp\space\thechapter.}%
+    \addcontentsline{toc}{chapter}{%
+      \protect\texorpdfstring{\protect\MakeUppercase{\@chapapp\ \thechapter:\ #1}}%
+                             {\@chapapp\ \thechapter: #1}}%
+  \else
+    \addcontentsline{toc}{chapter}{#1}%
+  \fi
+  \chaptermark{#1}%
+  \addtocontents{lof}{\protect\addvspace{10\p@}}%
+  \addtocontents{lot}{\protect\addvspace{10\p@}}%
+  \@makechapterhead{#2}\@afterheading}
+% danh mục hình/bảng: ghi đầy đủ "Hình 1.1:" / "Bảng 1.1:"
+\renewcommand*\l@figure{\@dottedtocline{1}{0em}{5.6em}}
+\renewcommand*\l@table{\@dottedtocline{1}{0em}{5.6em}}
+\makeatother
+
+% ---------------------------------------------------------------- tên tiếng Việt
+\usepackage{etoolbox}
+\gappto\captionsvietnamese{%
+  \renewcommand\contentsname{Mục lục}%
+  \renewcommand\listfigurename{Danh mục hình}%
+  \renewcommand\listtablename{Danh mục bảng}%
+  \renewcommand\bibname{Tài liệu tham khảo}%
+  \renewcommand\figurename{Hình}%
+  \renewcommand\tablename{Bảng}%
+  \renewcommand\chaptername{Chương}%
+  \renewcommand\appendixname{Phụ lục}%
+}
+\AtBeginDocument{%
+  \renewcommand\lstlistingname{Đoạn mã}%
+  \renewcommand\lstlistlistingname{Danh mục đoạn mã}}
+
+% ---------------------------------------------------------------- tài liệu tham khảo
+\usepackage[numbers, square, sort&compress]{natbib}
+\setlength{\bibsep}{3pt plus 1pt}
+\renewcommand{\bibsection}{%
+  \chapter*{\bibname}\addcontentsline{toc}{chapter}{TÀI LIỆU THAM KHẢO}}
+
+% ---------------------------------------------------------------- liên kết
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black,
+            bookmarksnumbered=true, unicode=true]{hyperref}
+\usepackage{bookmark}
+
+% ---------------------------------------------------------------- tiện ích
+% tên tệp/hàm: chữ đơn cách; cho phép xuống dòng sau dấu "_" để không tràn lề
+\newcommand{\codeus}{\textunderscore\allowbreak}
+\newcommand{\code}[1]{\texttt{\small\let\_\codeus #1}}
+\newcommand{\tn}[1]{\textit{#1}}                     % thuật ngữ tiếng Anh
+\newcommand{\xor}{\oplus}
+\newcommand{\hinh}[1]{Hình~\ref{#1}}
+\newcommand{\bang}[1]{Bảng~\ref{#1}}
+\newcommand{\doanma}[1]{Đoạn mã~\ref{#1}}
+\newcommand{\pt}[1]{(\ref{#1})}
+\newcommand{\muc}[1]{mục~\ref{#1}}
+\newcommand{\ok}{\ding{51}}   % dấu tick (màu đen)
+\newcommand{\no}{\ding{55}}   % dấu chéo (màu đen)
+\usepackage{pifont}
+% ô tiêu đề bảng có nền
+\newcommand{\thead}[1]{\textbf{#1}}   % hàng tiêu đề bảng: in đậm, không tô nền
+% khối ghi chú: một khung nền nhạt có tiêu đề in đậm
+\newsavebox{\ghichubox}
+\newenvironment{ghichu}[1][Nhận xét]{%
+  \par\smallskip\noindent
+  \begin{lrbox}{\ghichubox}%
+  \begin{minipage}{\dimexpr\linewidth-12pt-2\fboxrule\relax}%
+  \setlength{\parindent}{0pt}\setlength{\parskip}{3pt}%
+  \textbf{\color{ctublue}#1.}\ }%
+  {\end{minipage}\end{lrbox}%
+  {\setlength{\fboxsep}{6pt}\fcolorbox{codeframe}{codebg}{\usebox{\ghichubox}}}%
+  \par\smallskip}

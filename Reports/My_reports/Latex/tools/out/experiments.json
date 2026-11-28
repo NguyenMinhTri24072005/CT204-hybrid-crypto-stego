@@ -1,0 +1,390 @@
+{
+  "secret_shape": [
+    156,
+    156
+  ],
+  "secret_full_shape": [
+    246,
+    300
+  ],
+  "key_sensitivity": [
+    {
+      "cipher": "3des",
+      "change": "Đảo 1 bit của khóa K1 (bit 1, byte 0)",
+      "npcr_ct": 99.62606837606837,
+      "uaci_ct": 33.38501179564528,
+      "psnr_wrong_dec": 8.612911281378251,
+      "npcr_wrong_dec": 99.63839579224194
+    },
+    {
+      "cipher": "aes",
+      "change": "Đảo 1 bit của khóa (bit 0, byte 0)",
+      "npcr_ct": 99.55210387902696,
+      "uaci_ct": 33.46550257183741,
+      "psnr_wrong_dec": 8.625909421273152,
+      "npcr_wrong_dec": 99.62195923734384
+    },
+    {
+      "cipher": "chaotic",
+      "change": "x0 + 1e-10",
+      "npcr_ct": 99.30966469428007,
+      "uaci_ct": 32.70761624834023,
+      "psnr_wrong_dec": 8.720681327365545,
+      "npcr_wrong_dec": 99.30966469428007
+    },
+    {
+      "cipher": "chaotic",
+      "change": "r + 1e-10",
+      "npcr_ct": 99.23980933596319,
+      "uaci_ct": 32.77071972773331,
+      "psnr_wrong_dec": 8.705111999516271,
+      "npcr_wrong_dec": 99.23980933596319
+    },
+    {
+      "cipher": "chaotic",
+      "change": "ecc_seed 42 → 43",
+      "npcr_ct": 99.64250493096647,
+      "uaci_ct": 33.389507676838,
+      "psnr_wrong_dec": 8.717248677538514,
+      "npcr_wrong_dec": 99.64250493096647
+    }
+  ],
+  "plaintext_sensitivity": [
+    {
+      "cipher": "3des",
+      "position": "Điểm ảnh đầu (0,0)",
+      "npcr": 99.62606837606837,
+      "uaci": 33.519791545809646
+    },
+    {
+      "cipher": "aes",
+      "position": "Điểm ảnh đầu (0,0)",
+      "npcr": 99.6671597633136,
+      "uaci": 33.599976150881126
+    },
+    {
+      "cipher": "chaotic",
+      "position": "Điểm ảnh đầu (0,0)",
+      "npcr": 0.00410913872452334,
+      "uaci": 1.6114269507934668e-05
+    },
+    {
+      "cipher": "3des",
+      "position": "Điểm ảnh giữa (78,78)",
+      "npcr": 49.51101249178173,
+      "uaci": 16.594039653994404
+    },
+    {
+      "cipher": "aes",
+      "position": "Điểm ảnh giữa (78,78)",
+      "npcr": 49.465811965811966,
+      "uaci": 16.48256113753851
+    },
+    {
+      "cipher": "chaotic",
+      "position": "Điểm ảnh giữa (78,78)",
+      "npcr": 0.00410913872452334,
+      "uaci": 4.8342808523804e-05
+    },
+    {
+      "cipher": "3des",
+      "position": "Điểm ảnh cuối (155,155)",
+      "npcr": 0.03287310979618672,
+      "uaci": 0.01509907052893478
+    },
+    {
+      "cipher": "aes",
+      "position": "Điểm ảnh cuối (155,155)",
+      "npcr": 0.06574621959237344,
+      "uaci": 0.02716865839037785
+    },
+    {
+      "cipher": "chaotic",
+      "position": "Điểm ảnh cuối (155,155)",
+      "npcr": 0.00410913872452334,
+      "uaci": 8.057134753967333e-05
+    }
+  ],
+  "cipher_statistics": [
+    {
+      "image": "secret",
+      "corr_h": 0.9256600871970523,
+      "corr_v": 0.9408371178384953,
+      "corr_d": 0.8869573204123145,
+      "entropy": 7.425155152845391,
+      "chi2": 15143.542406311637
+    },
+    {
+      "image": "3des",
+      "corr_h": -0.002554866053227439,
+      "corr_v": 0.008595403262681232,
+      "corr_d": 0.0039810902187185585,
+      "entropy": 7.992845396210416,
+      "chi2": 241.17817225509532
+    },
+    {
+      "image": "aes",
+      "corr_h": -0.005648088224934884,
+      "corr_v": -0.0026477907812439564,
+      "corr_d": 0.011603447231968956,
+      "entropy": 7.9918923312467625,
+      "chi2": 272.2945430637738
+    },
+    {
+      "image": "chaotic",
+      "corr_h": -0.002105553586789521,
+      "corr_v": 0.0070221948772980726,
+      "corr_d": 0.0004956341734634414,
+      "entropy": 7.9931823938188895,
+      "chi2": 231.85798816568047
+    }
+  ],
+  "chi2_critical_0.05_255": 293.2478350807012,
+  "tamper": [
+    {
+      "cipher": "3des",
+      "mode": "baseline",
+      "stage": "ok",
+      "success": true,
+      "is_exact": true,
+      "psnr": Infinity,
+      "ber": 0.0,
+      "header_valid": true,
+      "message": "Trích xuất & giải mã hoàn tất."
+    },
+    {
+      "cipher": "3des",
+      "mode": "wrong_key",
+      "stage": "decrypt",
+      "success": false,
+      "is_exact": false,
+      "psnr": 8.657106004066787,
+      "ber": 0.500683144312952,
+      "header_valid": true,
+      "message": "Lỗi xác thực PKCS#7 padding (Padding is incorrect.) — gần như chắc chắn do SAI KHÓA hoặc payload bị sửa: khối CBC cuối giải mã ra rác nên không gỡ được padding."
+    },
+    {
+      "cipher": "3des",
+      "mode": "jpeg_q95",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'\\xca\\n4\\xa0' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    },
+    {
+      "cipher": "3des",
+      "mode": "flip_header_bit",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "CRC-16 mismatch: tính lại 0x5CB3 ≠ lưu trong Header 0x3BD6 — metadata đã bị giả mạo/hỏng."
+    },
+    {
+      "cipher": "3des",
+      "mode": "flip_payload_bits",
+      "stage": "decrypt",
+      "success": false,
+      "is_exact": false,
+      "psnr": 11.854870303836261,
+      "ber": 0.2410420775805391,
+      "header_valid": true,
+      "message": "Lỗi xác thực PKCS#7 padding (Padding is incorrect.) — gần như chắc chắn do SAI KHÓA hoặc payload bị sửa: khối CBC cuối giải mã ra rác nên không gỡ được padding."
+    },
+    {
+      "cipher": "3des",
+      "mode": "gaussian_noise",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'a\\x9c\\xed\\\\' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    },
+    {
+      "cipher": "aes",
+      "mode": "baseline",
+      "stage": "ok",
+      "success": true,
+      "is_exact": true,
+      "psnr": Infinity,
+      "ber": 0.0,
+      "header_valid": true,
+      "message": "Trích xuất & giải mã hoàn tất."
+    },
+    {
+      "cipher": "aes",
+      "mode": "wrong_key",
+      "stage": "decrypt",
+      "success": false,
+      "is_exact": false,
+      "psnr": 8.669611742042889,
+      "ber": 0.5015203813280736,
+      "header_valid": true,
+      "message": "Lỗi xác thực PKCS#7 padding (Padding is incorrect.) — gần như chắc chắn do SAI KHÓA hoặc payload bị sửa: khối CBC cuối giải mã ra rác nên không gỡ được padding."
+    },
+    {
+      "cipher": "aes",
+      "mode": "jpeg_q95",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'3\\x15K\\xe3' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    },
+    {
+      "cipher": "aes",
+      "mode": "flip_header_bit",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "CRC-16 mismatch: tính lại 0xE42D ≠ lưu trong Header 0x8348 — metadata đã bị giả mạo/hỏng."
+    },
+    {
+      "cipher": "aes",
+      "mode": "flip_payload_bits",
+      "stage": "decrypt",
+      "success": false,
+      "is_exact": false,
+      "psnr": 10.035583370122964,
+      "ber": 0.3589949046679816,
+      "header_valid": true,
+      "message": "Lỗi xác thực PKCS#7 padding (Padding is incorrect.) — gần như chắc chắn do SAI KHÓA hoặc payload bị sửa: khối CBC cuối giải mã ra rác nên không gỡ được padding."
+    },
+    {
+      "cipher": "aes",
+      "mode": "gaussian_noise",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'a\\x9c\\xed\\\\' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "baseline",
+      "stage": "ok",
+      "success": true,
+      "is_exact": true,
+      "psnr": Infinity,
+      "ber": 0.0,
+      "header_valid": true,
+      "message": "Trích xuất & giải mã hoàn tất."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "wrong_key",
+      "stage": "ok",
+      "success": true,
+      "is_exact": false,
+      "psnr": 8.717248677538514,
+      "ber": 0.4992500821827745,
+      "header_valid": true,
+      "message": "Giải mã chạy xong nhưng ảnh khác ảnh gốc (MSE = 8,736.86) — sai khóa hoặc payload bị sửa."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "jpeg_q95",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'L\\xb7\\xcc,' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "flip_header_bit",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "CRC-16 mismatch: tính lại 0xD481 ≠ lưu trong Header 0xB3E4 — metadata đã bị giả mạo/hỏng."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "flip_payload_bits",
+      "stage": "ok",
+      "success": true,
+      "is_exact": false,
+      "psnr": 24.851161003616788,
+      "ber": 0.01000061637080868,
+      "header_valid": true,
+      "message": "Giải mã chạy xong nhưng ảnh khác ảnh gốc (MSE = 212.80) — sai khóa hoặc payload bị sửa."
+    },
+    {
+      "cipher": "chaotic",
+      "mode": "gaussian_noise",
+      "stage": "header",
+      "success": false,
+      "is_exact": false,
+      "psnr": null,
+      "ber": null,
+      "header_valid": false,
+      "message": "Sai chữ ký Magic: đọc được b'a\\x9c\\xed\\\\' thay vì b'HCST' — ảnh không chứa tin hoặc LSB đã bị phá hủy (nén JPEG / nhiễu)."
+    }
+  ],
+  "known_plaintext": {
+    "chaotic": {
+      "recovered_exact": true,
+      "psnr_guess": Infinity,
+      "npcr_guess": 0.0,
+      "corr_xor_vs_plain_xor": 0.9999999999999998
+    },
+    "aes": {
+      "recovered_exact": false,
+      "psnr_guess": 7.83995482458642,
+      "npcr_guess": 99.63839579224194,
+      "corr_xor_vs_plain_xor": 0.005309717997658943
+    }
+  },
+  "embedding": [
+    {
+      "case": "1-LSB (156×156)",
+      "num_lsb": 1,
+      "cover_used": [
+        256,
+        256
+      ],
+      "scaled": false,
+      "max_abs_diff": 1,
+      "changed_ratio": 0.4946492513020833
+    },
+    {
+      "case": "3-LSB + phóng đại (246×300)",
+      "num_lsb": 3,
+      "cover_used": [
+        257,
+        257
+      ],
+      "scaled": true,
+      "max_abs_diff": 7,
+      "changed_ratio": 0.8680625999888971
+    }
+  ],
+  "steganalysis": {
+    "n_images": 8000,
+    "seconds": 34.81276350002736,
+    "threshold": 0.95,
+    "cover_flagged_rate": 0.04575,
+    "stego_flagged_rate": 0.998375,
+    "cover_p_median": 2.4223059283501134e-24,
+    "stego_p_median": 0.9999993017177637
+  }
+}

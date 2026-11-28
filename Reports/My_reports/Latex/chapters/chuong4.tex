@@ -1,0 +1,75 @@
+% =====================================================================
+\chapter{Kết luận}
+\label{chap:ketluan}
+% =====================================================================
+
+\section{Kết quả đạt được}
+
+Đề tài đã nghiên cứu và tái hiện đầy đủ bài báo ``\BaiBaoGoc'' \cite{raut2026hybrid} từ MATLAB sang
+Python. Các kết quả chính gồm:
+\begin{itemize}
+  \item \textbf{Về lý thuyết}: hệ thống hóa các kiến thức nền tảng của đề tài, gồm mã khối 3DES và
+        AES ở chế độ CBC, đệm PKCS\#7, hệ hỗn loạn Logistic, mã dòng XOR, giấu tin LSB đa bit, và các
+        tiêu chí đánh giá (MSE, PSNR, SSIM, NPCR, UACI, entropy, hệ số tương quan). Từ đó em rút ra
+        công thức sai số kỳ vọng $(L^2-1)/6$ của phép nhúng $k$-LSB, giải thích được vì sao bài báo
+        đạt $\mathrm{MSE} \approx 0.5$ và PSNR $\approx \SI{51.15}{dB}$.
+  \item \textbf{Về cài đặt}: xây dựng thư viện lõi gồm ba thuật toán mã hóa theo mẫu Strategy, lớp
+        giấu tin LSB 1--3 bit vectơ hóa hoàn toàn bằng NumPy, header 16 byte tự mô tả cho phép bên
+        nhận giải mã chỉ từ ảnh stego và khóa, và bộ độ đo đánh giá kép. Hệ thống có 347 ca kiểm thử
+        tự động, tất cả đều đạt.
+  \item \textbf{Về tái hiện}: xác định và giải quyết nhất quán mười điểm mù kỹ thuật của bài báo.
+        Trên toàn bộ 8000 ảnh Linnaeus 5 (\num{24000} lượt chạy), \textbf{100\%} ảnh bí mật được khôi
+        phục chính xác từng bit. MSE ($0.4956$), PSNR (\SI{51.18}{dB}) và NPCR ($\approx 99.6\%$) khớp
+        sát Bảng~2; thứ tự tốc độ Chaotic $<$ AES $<$ 3DES được giữ nguyên. Thời gian 3DES trên ảnh
+        $246\times300$ (\SI{3588}{\micro s}) gần như trùng số liệu của bài báo (\SI{3552}{\micro s}).
+  \item \textbf{Về phân tích}: giải thích được các con số ``bất thường'' trong Bảng~2. UACI thấp hơn
+        $33.46\%$ là do phân bố mức xám của ảnh bí mật (giá trị kỳ vọng tính được là $30.41\%$);
+        entropy $\approx 7.05$ thực chất là entropy của ảnh stego, trong khi entropy bản mã đạt
+        $7.993$.
+  \item \textbf{Về đánh giá an toàn mở rộng}: chỉ ra bằng thực nghiệm các hạn chế mà bài báo chưa
+        nêu. Lớp Chaotic + PRNG bị phá hoàn toàn bởi tấn công biết bản rõ và không có tính khuếch tán
+        (đổi một điểm ảnh chỉ đổi một byte bản mã). CBC với IV cố định chỉ khuếch tán về phía sau.
+        Giấu tin LSB thay thế bị kiểm định $\chi^2$ phát hiện ở $99.84\%$ ảnh stego và bị phá hủy bởi
+        nén JPEG hay nhiễu nhẹ.
+  \item \textbf{Về sản phẩm}: xây dựng ứng dụng desktop bốn tab chạy ngoại tuyến, gồm mã hóa và giấu
+        tin, giải mã kèm phòng thí nghiệm tấn công, so sánh ba thuật toán, và bảng điều khiển kết quả
+        8000 ảnh. Ứng dụng được đóng gói thành tệp \code{.exe} chạy độc lập trên Windows.
+\end{itemize}
+
+Về câu hỏi nên chọn thuật toán nào, kết quả của báo cáo cho thấy chất lượng ảnh stego \emph{không
+phụ thuộc} thuật toán mã hóa, chỉ phụ thuộc số bit nhúng. Trong ba lựa chọn, \textbf{AES-128} là
+phương án cân bằng nhất: nhanh nhờ AES-NI, là chuẩn được công nhận rộng rãi, và chống được tấn công
+biết bản rõ. Phương án Chaotic + PRNG của bài báo chỉ nhanh hơn khi mặt nạ được tính sẵn, và không đủ
+an toàn cho ứng dụng thực tế ở dạng hiện tại.
+
+\section{Hạn chế}
+
+\begin{itemize}
+  \item Do bài báo không công bố mã nguồn, khóa và nhiều chi tiết cài đặt, bản tái hiện chỉ có thể
+        bám sát ở mức các đại lượng có thể suy luận được. Một số chênh lệch nhỏ (SSIM, entropy ảnh
+        stego) chưa xác định được nguyên nhân chính xác.
+  \item Thời gian mã hóa được đo trên một máy tính cụ thể (Intel Core i3-1005G1) bằng Python, nên chỉ
+        có ý nghĩa so sánh tương đối với MATLAB.
+  \item Các cải tiến đề xuất ở \bang{tab:improve} mới dừng ở mức phân tích, chưa được cài đặt và đánh
+        giá đầy đủ trong khuôn khổ đề tài.
+  \item Phần đánh giá phân tích giấu tin mới dùng kiểm định $\chi^2$; chưa thử các phương pháp mạnh
+        hơn như phân tích RS \cite{fridrich2001} hay các bộ phân loại học sâu.
+\end{itemize}
+
+\section{Hướng phát triển}
+
+\begin{itemize}
+  \item \textbf{Nâng cấp lớp mật mã}: thay CBC bằng mã hóa có xác thực AES-GCM \cite{sp80038d} với
+        nonce ngẫu nhiên cho mỗi ảnh, đưa header vào dữ liệu liên kết để phát hiện mọi chỉnh sửa; dẫn
+        xuất khóa từ mật khẩu bằng Argon2 \cite{rfc9106}.
+  \item \textbf{Cải tiến lớp hỗn loạn}: thiết kế lại theo các yêu cầu của Alvarez và Li
+        \cite{alvarez2006}, gồm khóa bí mật đủ dài, dòng khóa phụ thuộc nonce và có vòng khuếch tán
+        trên toàn ảnh; sau đó đánh giá lại bằng phân tích vi sai đúng định nghĩa.
+  \item \textbf{Cải tiến lớp giấu tin}: thử nghiệm LSB matching \cite{mielikainen2006}, hoán vị vị
+        trí nhúng bằng khóa, giấu tin thích nghi theo độ phức tạp vùng ảnh \cite{holub2014}; đánh giá
+        bằng phân tích RS và các bộ phát hiện dựa trên học máy.
+  \item \textbf{Tăng độ bền vững}: kết hợp mã sửa lỗi và nhúng trong miền DCT/DWT để thông điệp sống
+        sót qua nén JPEG.
+  \item \textbf{Mở rộng ứng dụng}: hỗ trợ ảnh bí mật màu, video và âm thanh như hướng phát triển mà
+        bài báo gốc đề xuất.
+\end{itemize}

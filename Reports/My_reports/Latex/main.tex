@@ -1,0 +1,64 @@
+% !TeX program = xelatex
+% !TeX TS-program = xelatex
+% !BIB program = bibtex
+% !BIB TS-program = bibtex
+% !TeX encoding = UTF-8
+% !TeX spellcheck = vi_VN
+% =====================================================================
+%  BÁO CÁO HỌC PHẦN CT204 — AN TOÀN VÀ BẢO MẬT THÔNG TIN
+%  Đề tài: Khung lai mật mã – giấu tin cho truyền ảnh an toàn
+%  Biên dịch: XeLaTeX → BibTeX → XeLaTeX → XeLaTeX  (xem README.md)
+% =====================================================================
+\documentclass[12pt, a4paper, oneside]{report}
+
+\input{thongtin}
+\input{preamble}
+
+\hypersetup{
+  pdftitle={Báo cáo CT204 - Khung lai mật mã - giấu tin cho truyền ảnh an toàn},
+  pdfauthor={\SinhVien\space - \MSSV},
+  pdfsubject={An toàn và Bảo mật Thông tin (CT204)},
+  pdfkeywords={3DES, AES, Chaotic, LSB, Steganography, Image Security}
+}
+
+\begin{document}
+
+% ------------------------------------------------------------ phần mở đầu
+\pagenumbering{roman}
+\input{frontmatter/biachinh}   % bìa chính
+\input{frontmatter/biachinh}   % bìa phụ (giống bìa chính)
+\pagestyle{dau}
+\input{frontmatter/nhanxet}
+\input{frontmatter/loicamon}
+
+\cleardoublepage
+\setcounter{page}{1}
+\tableofcontents
+\cleardoublepage
+\phantomsection\addcontentsline{toc}{chapter}{DANH MỤC HÌNH}
+\listoffigures
+\cleardoublepage
+\phantomsection\addcontentsline{toc}{chapter}{DANH MỤC BẢNG}
+\listoftables
+\input{frontmatter/viettat}
+
+% ------------------------------------------------------------ nội dung chính
+\cleardoublepage
+\pagenumbering{arabic}
+\pagestyle{noidung}
+\makeatletter\let\ps@plain\ps@noidung\makeatother  % trang đầu chương cũng có tiêu đề
+
+\input{chapters/chuong1}
+\input{chapters/chuong2}
+\input{chapters/chuong3}
+\input{chapters/chuong4}
+
+% ------------------------------------------------------------ tài liệu tham khảo
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+% ------------------------------------------------------------ phụ lục
+\appendix
+\input{chapters/phuluc}
+
+\end{document}

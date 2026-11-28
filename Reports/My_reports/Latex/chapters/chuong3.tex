@@ -1,0 +1,518 @@
+% =====================================================================
+\chapter{Vận dụng kỹ thuật trong báo cáo môn học}
+\label{chap:vandung}
+% =====================================================================
+
+Để kiểm chứng các kết luận của bài báo, em đã cài đặt lại toàn bộ khung lai mật mã -- giấu tin
+bằng ngôn ngữ Python thay cho MATLAB R2024a mà các tác giả sử dụng. Sản phẩm gồm ba phần: một
+thư viện lõi (mã hóa, giấu tin, đánh giá), các kịch bản dòng lệnh để tái hiện Hình~4--5 và
+Bảng~2 của bài báo, và một ứng dụng desktop chạy ngoại tuyến để trình diễn trực quan. Chương này
+trình bày kiến trúc, các quyết định thiết kế, cách cài đặt, giao diện, kiểm thử và kết quả thực
+nghiệm, kèm theo một số phân tích an toàn mở rộng mà bài báo chưa thực hiện.
+
+\section{Mục tiêu và phạm vi tái hiện}
+
+Các mục tiêu cụ thể của phần vận dụng:
+\begin{enumerate}
+  \item Cài đặt đúng ba lớp mã hóa (3DES-CBC, AES-128-CBC, Chaotic + PRNG) và lớp giấu tin LSB
+        đa bit theo mô tả của bài báo, bảo đảm khôi phục ảnh bí mật \emph{chính xác từng bit}
+        ($\mathrm{MSE} = 0$).
+  \item Làm rõ và xử lý nhất quán các chi tiết bài báo không công bố hoặc mô tả mâu thuẫn.
+  \item Tái hiện Hình~4, Hình~5 (một cặp ảnh mẫu) và Bảng~2 (8000 ảnh Linnaeus 5) của bài báo,
+        đối chiếu định lượng với số liệu gốc.
+  \item Đánh giá thêm các khía cạnh an toàn mà bài báo chưa đề cập: độ nhạy khóa, phân tích vi
+        sai đúng định nghĩa, tấn công biết bản rõ, khả năng chống chỉnh sửa và khả năng bị phát hiện.
+  \item Xây dựng ứng dụng desktop trực quan, đóng gói thành tệp thực thi chạy độc lập trên
+        Windows.
+\end{enumerate}
+
+\section{Kiến trúc và luồng xử lý hệ thống}
+
+\subsection{Công nghệ sử dụng}
+
+Hệ thống được viết bằng Python 3.12 và chỉ dùng các thư viện mã nguồn mở phổ biến
+(\bang{tab:tech}). Toàn bộ tham số thuật toán được tập trung trong một tệp cấu hình YAML duy nhất
+(\path{configs/default.yaml}), không có giá trị nào được viết cứng trong mã nguồn.
+
+\begin{table}[H]
+\centering
+\caption{Công nghệ và thư viện sử dụng}
+\label{tab:tech}
+\small
+\begin{tabularx}{\linewidth}{@{}P{3.4cm}P{1.9cm}L@{}}
+\toprule
+\thead{Thư viện} & \thead{Phiên bản} & \thead{Vai trò}\\
+\midrule
+Python & 3.12.8 & Ngôn ngữ cài đặt (môi trường ảo \code{.venv})\\
+PyCryptodome \cite{pycryptodome} & 3.24.1 & Mã khối DES3, AES chế độ CBC; đệm PKCS\#7\\
+NumPy \cite{harris2020numpy} & 2.2.6 & Biểu diễn ảnh, thao tác bit vectơ hóa, sinh số giả ngẫu nhiên PCG64\\
+Numba \cite{lam2015numba} & 0.68.1 & Biên dịch JIT vòng lặp ánh xạ Logistic sang mã máy\\
+OpenCV \cite{bradski2000} & 4.14.0 & Đọc/ghi ảnh, phóng to ảnh phủ (nội suy bicubic), nén JPEG thử nghiệm\\
+scikit-image \cite{vanderwalt2014} & 0.26.0 & SSIM cửa sổ Gauss; ảnh mẫu \code{coins}\\
+SciPy, pandas & 1.18.1, 2.3.3 & Thống kê, kiểm định $\chi^2$; tổng hợp kết quả benchmark ra CSV\\
+Matplotlib & 3.11.2 & Vẽ histogram và biểu đồ (giao diện OOP, không dùng \code{pyplot} trong GUI)\\
+Tkinter/ttk, Pillow & 8.6, 13.0.0 & Giao diện desktop; hiển thị ảnh\\
+pytest & 8.4.2 & Kiểm thử tự động (347 ca kiểm thử)\\
+PyInstaller & 6.22.3 & Đóng gói ứng dụng thành tệp \code{.exe}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Kiến trúc phân lớp}
+
+Mã nguồn được tổ chức thành các gói độc lập theo trách nhiệm (\hinh{fig:architecture}). Tầng mã
+hóa áp dụng \textbf{mẫu thiết kế Strategy}: lớp trừu tượng \code{BaseCipher} quy định giao diện
+chung \code{encrypt(bytes) -> bytes} và \code{decrypt(bytes) -> bytes}, ba lớp con
+\code{DES3Cipher}, \code{AESCipher}, \code{ChaoticCipher} cài đặt cụ thể, và hàm
+\code{create\_cipher} khởi tạo thuật toán theo tên. Nhờ đó tầng giấu tin, tầng đánh giá và giao
+diện chỉ phụ thuộc vào giao diện chung; việc thêm một thuật toán mới không phải sửa các tầng khác.
+
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+  layer/.style={draw, rounded corners=3pt, fill=codebg, inner sep=4pt},
+  mod/.style={box, text width=34mm, minimum height=11mm, font=\footnotesize},
+  core/.style={box, text width=42mm, minimum height=16mm, font=\footnotesize},
+  wide/.style={box, text width=144mm, minimum height=8mm, font=\footnotesize}]
+  % tầng trình diễn: GUI và kịch bản dòng lệnh
+  \node[mod, fill=tblhead] (app) {\code{app.py}\\GUI Tkinter (4 tab)};
+  \node[mod, fill=tblhead, right=3.5mm of app]  (ctrl) {\code{ui/controller.py}\\nghiệp vụ của GUI};
+  \node[mod, fill=tblhead, right=3.5mm of ctrl] (cli1) {\code{run\_single.py}\\Hình 4--5};
+  \node[mod, fill=tblhead, right=3.5mm of cli1] (cli2) {\code{run\_benchmark.py}\\Bảng 2, CSV};
+  % pipeline
+  \node[wide, below=8mm of $(ctrl.south)!0.5!(cli1.south)$] (pipe)
+      {\code{pipeline.py}: \code{hide()}, \code{reveal()}, \code{run\_pipeline()} --- mã hóa (đo thời gian)
+       $\rightarrow$ nhúng $\rightarrow$ trích $\rightarrow$ giải mã $\rightarrow$ tính độ đo};
+  % lõi
+  \node[core, below=8mm of pipe] (stego) {\code{stego/lsb.py}\\header 16 byte\\nhúng/trích $k$-LSB};
+  \node[core, left=4mm of stego] (crypto) {\code{crypto/}\\\code{BaseCipher} (Strategy)\\DES3, AES, Chaotic};
+  \node[core, right=4mm of stego] (metrics) {\code{metrics/}\\\code{visual.py}, \code{security.py}\\MSE, PSNR, NPCR, \ldots};
+  \node[wide, fill=white, below=8mm of stego] (cfg)
+      {\code{config.py} + \code{default.yaml}: $x_0$, $r$, seed khóa, độ dài khóa/IV, kích thước ảnh phủ, số LSB tối đa};
+  \begin{scope}[on background layer]
+    \node[layer, fit=(app)(cli2)] {};
+    \node[layer, fit=(crypto)(metrics)] {};
+  \end{scope}
+  \foreach \n in {app, ctrl, cli1, cli2}{ \draw[arr] (\n.south) -- (\n.south |- pipe.north); }
+  \foreach \n in {crypto, stego, metrics}{
+    \draw[arr] (\n.north |- pipe.south) -- (\n.north);
+    \draw[arr, dashed] (\n.south |- cfg.north) -- (\n.south); }
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Kiến trúc phân lớp của hệ thống tái hiện}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Luồng xử lý phía gửi và phía nhận}
+
+\hinh{fig:flow} mô tả luồng dữ liệu hoàn chỉnh. Điểm khác biệt quan trọng so với bài báo là phía
+nhận \textbf{chỉ cần ảnh mang tin và khóa}: mọi siêu dữ liệu cần thiết (số bit LSB, kích thước ảnh
+bí mật, độ dài bản mã) được đọc từ một header 16 byte nhúng sẵn trong ảnh.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=5mm and 7mm, every node/.style={font=\footnotesize}]
+  \node[box] (s) {Ảnh bí mật\\$H_s\times W_s$, uint8};
+  \node[pbox, right=of s] (b) {\code{tobytes()}\\(thứ tự hàng)};
+  \node[pbox, right=of b] (e) {\code{cipher.encrypt}\\(đo EncTime)};
+  \node[pbox, right=of e] (h) {Header 16 B\\+ bản mã};
+  \node[pbox, right=of h] (em) {\code{lsb.embed}\\$k$-LSB};
+  \node[box, above=of em] (c) {Ảnh phủ RGB\\$256\times256$};
+  \node[box, below=8mm of em] (st) {Ảnh stego\\(.png)};
+  \node[pbox, left=of st] (ex) {\code{lsb.extract}\\đọc header};
+  \node[pbox, left=of ex] (d) {\code{cipher.decrypt}\\gỡ đệm};
+  \node[pbox, left=of d] (r) {reshape\\$(H_s, W_s)$};
+  \node[box, left=of r] (rec) {Ảnh khôi phục\\MSE $=0$};
+  \draw[arr] (s) -- (b); \draw[arr] (b) -- (e); \draw[arr] (e) -- (h); \draw[arr] (h) -- (em);
+  \draw[arr] (c) -- (em); \draw[arr] (em) -- (st); \draw[arr] (st) -- (ex);
+  \draw[arr] (ex) -- (d); \draw[arr] (d) -- (r); \draw[arr] (r) -- (rec);
+  \node[lbl, above=1mm of b, xshift=8mm] {\textbf{Phía gửi}};
+  \node[lbl, below=1mm of d, xshift=8mm] {\textbf{Phía nhận}};
+\end{tikzpicture}
+\caption{Luồng xử lý gửi -- nhận của hệ thống}
+\label{fig:flow}
+\end{figure}
+
+\subsection{Cấu trúc mã nguồn}
+
+\begin{lstlisting}[style=plain, caption={Cấu trúc thư mục mã nguồn}, label={lst:tree}]
+SOURCES/
+|-- app.py                      # diem vao ung dung desktop
+|-- configs/default.yaml        # nguon tham so duy nhat
+|-- src/
+|   |-- config.py               # doc YAML, chuan hoa duong dan
+|   |-- pipeline.py             # hide / reveal / run_pipeline
+|   |-- crypto/  base.py, des3_cipher.py, aes_cipher.py, chaotic_cipher.py
+|   |-- stego/   lsb.py         # header 16 byte + nhung/trich k-LSB
+|   |-- metrics/ visual.py, security.py
+|   `-- ui/      app_window.py, controller.py, worker.py, plots.py, tabs/...
+|-- scripts/     run_single.py, run_benchmark.py
+|-- tests/       test_crypto.py, test_lsb.py, test_metrics.py,
+|                test_pipeline.py, test_ui_controller.py
+|-- packaging/ct204_app.spec    # cau hinh PyInstaller
+`-- results/     benchmark_results.csv, benchmark_summary_table2.csv, single/
+\end{lstlisting}
+
+\section{Giải quyết các điểm mù kỹ thuật của bài báo}
+\label{sec:diemmu}
+
+Bài báo không công bố mã nguồn và bỏ ngỏ nhiều chi tiết. Em đã liệt kê mười ``điểm mù''
+(ký hiệu BM-01 đến BM-10). Với mỗi điểm mù, em so sánh các phương án và chọn một phương án duy
+nhất có lý do rõ ràng (\bang{tab:bm}). Mục này trình bày chi tiết ba quyết định ảnh hưởng nhiều
+nhất đến việc đối chiếu kết quả.
+
+{\small
+\begin{longtable}{@{}P{1.3cm}P{5.6cm}P{8.1cm}@{}}
+\caption{Mười điểm mù kỹ thuật và quyết định thiết kế đã chọn}
+\label{tab:bm}\\
+\toprule
+\thead{Mã} & \thead{Điểm mù trong bài báo} & \thead{Quyết định thiết kế}\\
+\midrule
+\endfirsthead
+\toprule
+\thead{Mã} & \thead{Điểm mù trong bài báo} & \thead{Quyết định thiết kế}\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+BM-01 & Không công bố kích thước ảnh ``coins''; mâu thuẫn giữa Hình~5 (3-LSB) và MSE $\approx 0.5$ ở Bảng~2 (1-LSB)
+      & Ảnh mẫu chuẩn hóa về $246\times300$ (đúng \code{coins.png} của MATLAB) để tái hiện Hình~4--5; hỗ trợ tham số \code{--secret-size 156 156} để tái hiện Bảng~2 ở chế độ 1-LSB\\
+BM-02 & Thứ tự trải phẳng byte (MATLAB theo cột, NumPy theo hàng)
+      & Thống nhất thứ tự hàng (C-contiguous), kênh màu xen kẽ RGB $(H, W, 3)$ ở mọi bước\\
+BM-03 & Không công bố khóa, IV, seed; không rõ dùng một khóa hay khóa riêng cho mỗi ảnh
+      & Dẫn xuất tất định có phân tách miền: $\mathrm{SHA\text{-}256}(\text{seed}:\text{nhãn})$ làm hạt giống PRNG; mặc định khóa cố định, có tùy chọn \code{--vary-key-per-image}\\
+BM-04 & Không nêu cách đưa $x_n \in (0,1)$ về byte; ``ECC'' không có đường cong elliptic
+      & $\mathit{chaosMask}[n] = \min(\lfloor 256\,x_{n+1} \rfloor, 255)$ lấy từ $x_1$; mặt nạ ECC $=$ PCG64(\code{ecc\_seed}) sinh byte đều\\
+BM-05 & Không nêu chuẩn đệm; bản mã sau đệm dài hơn $H_s W_s$ nên không reshape được
+      & Đệm PKCS\#7, nhúng \emph{toàn bộ} bản mã; chỉ cắt $H_s W_s$ byte đầu khi hiển thị ảnh mã hóa và tính NPCR/UACI\\
+BM-06 & Không có cơ chế truyền siêu dữ liệu sang phía nhận
+      & Header nhị phân 16 byte (magic \code{HCST}, phiên bản, $k$, $H_s$, $W_s$, độ dài bản mã, CRC-16) nhúng ở 1-LSB của 128 giá trị kênh đầu tiên\\
+BM-07 & Không nêu công thức phóng to ảnh phủ và ảnh đối chiếu khi tính MSE
+      & Tăng $k$ từ 1 đến 3 trước; nếu vẫn thiếu thì phóng to đẳng hướng tối thiểu bằng nội suy bicubic; MSE tính giữa ảnh phủ \emph{đã dùng} và ảnh stego\\
+BM-08 & Mâu thuẫn đối tượng đo entropy, NPCR, UACI, tương quan (bản mã hay ảnh stego)
+      & Tính song song hai nhóm độ đo: \code{*\_enc} (ảnh bí mật -- bản mã) và \code{*\_stego} (ảnh phủ -- ảnh stego)\\
+BM-09 & Mẫu số MSE ghi $M\times N$ cho ảnh màu; không nêu cửa sổ SSIM; hai cách hiểu về tương quan
+      & MSE chia cho $H\times W\times3$; SSIM cửa sổ Gauss $11\times11$, $\sigma = 1.5$ (chuẩn Wang 2004, giống MATLAB); cài cả tương quan chéo và tương quan điểm ảnh kề\\
+BM-10 & Cách vẽ histogram ảnh màu; phạm vi đo EncTime của Chaotic
+      & Histogram 256 mức gộp phẳng cả 3 kênh (giống \code{img(:)} của MATLAB); Chaotic mặc định sinh lại mặt nạ mỗi lần, có chế độ ``cache mặt nạ'' để đo riêng phép XOR\\
+\end{longtable}}
+
+\paragraph{BM-01 -- Nghịch lý dung lượng 1-LSB và 3-LSB.}
+Histogram bản mã ở Hình~5 của bài báo cao đều khoảng 288 điểm ảnh mỗi mức, tức tổng
+$288.28 \times 256 \approx \num{73800}$ byte $= 246\times300$. Điều này chứng tỏ tác giả dùng
+\code{coins.png} của MATLAB. Bản mã AES của ảnh này dài \num{73808} byte, vượt dung lượng 3-LSB của
+ảnh $256\times256$ là $(3\cdot256^2 - 128)\cdot 3 / 8 = \num{73680}$ byte, nên bắt buộc phải nhúng
+3-LSB và phóng to ảnh phủ. Theo \pt{eq:lsb-mse}, MSE khi đó phải xấp xỉ 10.5 chứ không thể là 0.5.
+Ngược lại, $\mathrm{MSE} \approx 0.50$ và PSNR $\approx \SI{51.15}{dB}$ ở Bảng~2 là ``hằng số toán
+học'' của phép nhúng 1-LSB gần lấp đầy ảnh, tương ứng tải tin khoảng \num{24500} byte, tức ảnh
+khoảng $156\times156$. Vì vậy hệ thống hỗ trợ cả hai cấu hình: $246\times300$ để tái hiện
+Hình~4--5 và $156\times156$ (\num{24336} byte, lấp $99.09\%$ dung lượng 1-LSB) để tái hiện Bảng~2.
+
+\paragraph{BM-06 -- Header tự mô tả cho phép trích xuất ``mù''.}
+Bài báo không cho biết phía nhận làm sao biết được số bit LSB, kích thước ảnh và độ dài bản mã.
+Truyền các giá trị này qua kênh phụ thì không thực tế. Còn dùng chuỗi phân cách thì không an
+toàn, vì bản mã là dữ liệu ngẫu nhiên nên có thể trùng chuỗi phân cách. Em thiết kế một header
+nhị phân cố định 16 byte, luôn nhúng ở 1-LSB nên đọc được trước khi biết $k$. Chi tiết được trình
+bày ở mục~\ref{sec:header}.
+
+\paragraph{BM-08 -- Hai nhóm độ đo an toàn.}
+Mục 4.4 của bài báo định nghĩa NPCR, UACI, entropy, tương quan giữa ảnh bí mật và bản mã, nhưng
+bước 9 của thuật toán AES-LSB lại ghi tính các độ đo này ``cho mỗi ảnh stego''. Kiểm tra số liệu
+cho thấy NPCR $\approx 99.6\%$ và tương quan $\approx 0$ chỉ có thể đến từ bản mã, trong khi
+entropy $\approx 7.05$ lại giống entropy của một ảnh màu tự nhiên. Vì vậy hệ thống tính và xuất
+\emph{cả hai nhóm}, để kết quả ở mục~\ref{sec:ketqua-antoan} có thể giải thích trọn vẹn Bảng~2.
+
+\section{Cài đặt các thành phần chính}
+\label{sec:caidat}
+
+\subsection{Sinh khóa tất định có phân tách miền}
+
+Để kết quả tái lập được giữa các lần chạy mà không phải lưu khóa vào ảnh, khóa và IV được dẫn xuất
+tất định từ hạt giống \code{key\_seed = 2025} trong tệp cấu hình (\doanma{lst:derive}). Mỗi vai trò
+dùng một nhãn riêng (\code{"aes:key"}, \code{"aes:iv"}, \code{"3des:key:0"}, \ldots). Đi qua
+SHA-256 bảo đảm các khóa độc lập thống kê với nhau. Nếu khởi tạo PRNG trực tiếp bằng cùng một seed
+thì 16 byte đầu của khóa 3DES sẽ trùng khóa AES. Với 3DES, nếu khóa dẫn xuất bị suy biến
+($K_1 = K_2$ hoặc $K_2 = K_3$, khiến 3DES thoái hóa thành DES đơn), hệ thống thử nhãn kế tiếp
+\code{"3des:key:1"}, \ldots{} cho đến khi được khóa hợp lệ.
+
+\begin{lstlisting}[caption={Hàm dẫn xuất byte tất định có phân tách miền (\code{crypto/base.py})}, label={lst:derive}]
+def derive_bytes(seed: int, length: int, label: str) -> bytes:
+    digest = hashlib.sha256(f"{seed}:{label}".encode("utf-8")).digest()
+    rng = np.random.default_rng(int.from_bytes(digest, "big"))
+    return rng.integers(0, 256, size=length, dtype=np.uint8).tobytes()
+\end{lstlisting}
+
+Lưu ý rằng cơ chế này phục vụ \emph{tái lập thực nghiệm}, không phải cơ chế quản lý khóa an toàn:
+ai biết seed trong tệp cấu hình đều dựng lại được khóa. Ứng dụng desktop vì thế bổ sung chế độ
+``mật khẩu tùy chỉnh'', trong đó khóa của cả ba thuật toán được dẫn xuất từ
+$\mathrm{SHA\text{-}256}(\code{"ct204-ui:"}\,\|\,\text{thuật toán}\,\|\,\text{mật khẩu})$.
+
+\subsection{Mã hóa 3DES và AES ở chế độ CBC}
+
+Hai lớp \code{DES3Cipher} và \code{AESCipher} có cấu trúc giống nhau (\doanma{lst:des3}): kiểm tra
+độ dài khóa/IV ngay khi khởi tạo, tạo \emph{mới} đối tượng CBC cho mỗi lần gọi vì đối tượng CBC của
+PyCryptodome có trạng thái và chỉ dùng được một lần, đệm PKCS\#7 khi mã hóa, và kiểm tra độ dài bản
+mã là bội số của kích thước khối trước khi giải mã.
+
+\begin{lstlisting}[caption={Lớp mã hóa 3DES-CBC (\code{crypto/des3\_cipher.py}, rút gọn)}, label={lst:des3}]
+class DES3Cipher(BaseCipher):
+    def __init__(self, key: bytes, iv: bytes) -> None:
+        # raises ValueError for degenerate keys (K1 == K2 or K2 == K3)
+        adjusted = DES3.adjust_key_parity(bytes(key))
+        DES3.new(adjusted, DES3.MODE_CBC, iv=bytes(iv))
+        self._key, self._iv = adjusted, bytes(iv)
+
+    def _new(self):  # fresh CBC object per call: CBC objects are single-use
+        return DES3.new(self._key, DES3.MODE_CBC, iv=self._iv)
+
+    def encrypt(self, plaintext: bytes) -> bytes:
+        return self._new().encrypt(pad(plaintext, 8, style="pkcs7"))
+
+    def decrypt(self, ciphertext: bytes) -> bytes:
+        if len(ciphertext) == 0 or len(ciphertext) % 8 != 0:
+            raise ValueError("ciphertext length must be a positive multiple of 8")
+        return unpad(self._new().decrypt(ciphertext), 8, style="pkcs7")
+\end{lstlisting}
+
+\subsection{Mã hóa hỗn loạn Chaotic + PRNG}
+
+Vòng lặp ánh xạ Logistic có tính tuần tự ($x_{n+1}$ phụ thuộc $x_n$) nên không thể vectơ hóa bằng
+NumPy. Em dùng Numba \cite{lam2015numba} để biên dịch vòng lặp sang mã máy (\doanma{lst:chaotic}).
+Quy tắc lượng tử hóa $\lfloor 256\,x \rfloor$ chia đều khoảng $[0,1)$ thành đúng 256 khoảng con.
+Cách \code{uint8(255*x)} của MATLAB (làm tròn) thì làm hai mức biên 0 và 255 chỉ rộng bằng một nửa
+các mức khác. Để thời gian biên dịch JIT không bị tính vào EncTime, hàm \code{warmup()} chạy thử
+hàm đã biên dịch trên 16 byte trước khi đo.
+
+\begin{lstlisting}[caption={Sinh mặt nạ hỗn loạn và mã hóa XOR (\code{crypto/chaotic\_cipher.py}, rút gọn)}, label={lst:chaotic}]
+@numba.njit(cache=True)
+def logistic_mask(x0: float, r: float, n: int) -> np.ndarray:
+    out = np.empty(n, dtype=np.uint8)
+    x = x0
+    for i in range(n):
+        x = r * x * (1.0 - x)                  # logistic map, starts at x_1
+        v = int(np.floor(x * 256.0))
+        out[i] = 0 if v < 0 else (255 if v > 255 else v)
+    return out
+
+def ecc_mask(ecc_seed: int, n: int) -> np.ndarray:  # "simulated ECC" = seeded PRNG
+    return np.random.default_rng(ecc_seed).integers(0, 256, size=n, dtype=np.uint8)
+
+class ChaoticCipher(BaseCipher):
+    def _xor(self, data: bytes) -> bytes:
+        buf = np.frombuffer(data, dtype=np.uint8)
+        mask = logistic_mask(self._x0, self._r, buf.size) ^ ecc_mask(self._ecc_seed, buf.size)
+        return (buf ^ mask).tobytes()
+    encrypt = decrypt = _xor                     # XOR is its own inverse
+\end{lstlisting}
+
+\subsection{Giao thức header 16 byte}
+\label{sec:header}
+
+Header được đóng gói bằng mô-đun \code{struct} của Python theo định dạng big-endian
+\code{">4sBBHHIH"} (\hinh{fig:header}). Trường CRC-16 bằng 16 bit thấp của CRC-32 tính trên 14 byte đầu. Khi trích
+xuất, hệ thống lần lượt kiểm tra magic, CRC, phiên bản, $k$, kích thước ảnh và việc bản mã có vượt
+quá dung lượng ảnh hay không. Bất kỳ sai lệch nào cũng dừng quá trình với thông báo lỗi rõ ràng thay
+vì giải mã ra dữ liệu rác. Header chỉ chiếm 128 bit, khoảng $0.065\%$ số giá trị kênh của ảnh
+$256\times256$.
+
+\begin{figure}[H]
+\centering
+\begin{bytefield}[bitwidth=0.9cm, bitheight=0.9cm]{16}
+  \bitheader{0-15}\\
+  \bitbox{4}{\small magic \code{"HCST"}} &
+  \bitbox{1}{\scriptsize ver} &
+  \bitbox{1}{\small $k$} &
+  \bitbox{2}{\small $H_s$} &
+  \bitbox{2}{\small $W_s$} &
+  \bitbox{4}{\small \code{ciphertext\_len}} &
+  \bitbox{2}{\small CRC-16}
+\end{bytefield}
+
+\vspace{4mm}
+\begin{tikzpicture}[x=0.96cm, y=1cm]
+  \draw[fill=orange!25] (0,0) rectangle (1.6,0.7) node[midway, font=\scriptsize, align=center] {Header\\1-LSB};
+  \draw[fill=tblhead] (1.6,0) rectangle (11.0,0.7) node[midway, font=\scriptsize] {Bản mã: $8\cdot\mathit{len}$ bit, mỗi giá trị kênh chứa $k$ bit};
+  \draw[fill=white] (11.0,0) rectangle (14.4,0.7) node[midway, font=\scriptsize] {Không thay đổi};
+  \node[font=\scriptsize, below] at (0,0) {0};
+  \node[font=\scriptsize, below] at (1.6,0) {128};
+  \node[font=\scriptsize, below] at (11.0,0) {$128 + \lceil 8\,\mathit{len}/k \rceil$};
+  \node[font=\scriptsize, below] at (14.4,0) {$3HW$};
+  \node[font=\scriptsize, anchor=east] at (-0.1,0.35) {\code{flat}};
+\end{tikzpicture}
+\caption{Cấu trúc header 16 byte (trên) và bố cục nhúng trên mảng kênh màu trải phẳng (dưới)}
+\label{fig:header}
+\end{figure}
+
+\subsection{Nhúng và trích xuất LSB vectơ hóa}
+
+Ảnh phủ $(H, W, 3)$ được trải phẳng thành mảng \code{flat} gồm $M = 3HW$ giá trị kênh. Số bit LSB
+$k$ được chọn là giá trị nhỏ nhất trong $\{1, 2, 3\}$ thỏa $8\cdot\mathit{len} \le (M - 128)\,k$.
+Nếu ngay cả $k = 3$ cũng không đủ, ảnh phủ được phóng to đẳng hướng với hệ số tối thiểu
+\begin{equation}
+  s = \sqrt{\frac{\lceil 8\,\mathit{len}/3 \rceil + 128}{3HW}}, \qquad
+  H' = \lceil sH \rceil,\; W' = \lceil sW \rceil,
+  \label{eq:scaleup}
+\end{equation}
+bằng nội suy bicubic. Ví dụ, ảnh ``coins'' $246\times300$ chỉ làm ảnh phủ tăng từ $256\times256$
+lên $257\times257$.
+
+Toàn bộ thao tác bit được vectơ hóa hoàn toàn bằng NumPy, không có vòng lặp Python trên từng điểm
+ảnh (\doanma{lst:lsb}). Chuỗi bit được chia thành nhóm $k$ bit, mỗi nhóm được đổi thành một ``ký
+hiệu'' $m \in [0, 2^k)$ bằng tích vô hướng với vectơ trọng số $(2^{k-1}, \dots, 2, 1)$, rồi ghi vào
+$k$ bit thấp bằng phép AND/OR theo \pt{eq:klsb}.
+
+\begin{lstlisting}[caption={Ghi và đọc $k$ bit thấp theo kiểu vectơ hóa (\code{stego/lsb.py})}, label={lst:lsb}]
+def _write_lsb(values: np.ndarray, bits: np.ndarray, k: int) -> np.ndarray:
+    n = values.size
+    groups = np.zeros(n * k, dtype=np.uint8)
+    groups[: bits.size] = bits                       # zero-pad the last group
+    weights = (1 << np.arange(k - 1, -1, -1)).astype(np.uint8)
+    symbols = (groups.reshape(n, k) * weights).sum(axis=1, dtype=np.uint16).astype(np.uint8)
+    keep = np.uint8(0xFF ^ ((1 << k) - 1))           # e.g. k=3 -> 0b11111000
+    return (values & keep) | symbols
+
+def _read_lsb(values: np.ndarray, k: int, n_bits: int) -> np.ndarray:
+    shifts = np.arange(k - 1, -1, -1, dtype=np.uint8)
+    bits = (values[:, None] >> shifts) & np.uint8(1)
+    return bits.reshape(-1)[:n_bits]
+\end{lstlisting}
+
+\subsection{Đo lường và đánh giá}
+
+Mô-đun \code{metrics} cài đặt các công thức ở mục~\ref{sec:tieuchi} dưới dạng hàm thuần, nhận hai
+ảnh \code{uint8} bất kỳ (2D hoặc 3D), nhờ đó cùng một hàm dùng được cho cả cặp (ảnh bí mật, bản mã)
+lẫn cặp (ảnh phủ, ảnh stego). Mọi phép trừ được thực hiện trên \code{float64} để tránh tràn số
+\code{uint8}. Thời gian mã hóa được đo bằng \code{time.perf\_counter()} bao quanh \emph{duy nhất}
+lời gọi \code{cipher.encrypt}, sau khi đã khởi động (\doanma{lst:enctime}).
+
+\begin{lstlisting}[caption={Đo thời gian mã hóa (\code{metrics/security.py}, rút gọn)}, label={lst:enctime}]
+def measure_enc_time(cipher, plaintext: bytes, *, warmup: bool = True):
+    if warmup:
+        cipher.warmup()                          # compile Numba JIT outside the timer
+        if getattr(cipher, "cache_mask", False):
+            cipher.combined_mask(len(plaintext)) # cached mode: time only the XOR
+    t0 = time.perf_counter()
+    ciphertext = cipher.encrypt(plaintext)
+    return ciphertext, time.perf_counter() - t0
+\end{lstlisting}
+
+\section{Giao diện ứng dụng desktop}
+
+\subsection{Tổng quan}
+
+Ngoài các kịch bản dòng lệnh, em xây dựng một ứng dụng desktop bằng Tkinter/ttk để trình diễn
+toàn bộ khung trực quan và chạy hoàn toàn ngoại tuyến. Ứng dụng gồm bốn tab tương ứng bốn kịch bản
+sử dụng. Các tác vụ nặng như mã hóa, nhúng hay chạy so sánh được đưa sang luồng nền; kết quả trả về
+luồng giao diện qua hàng đợi \code{queue.Queue} và cơ chế \code{after()} của Tk, nên giao diện
+không bị treo. Biểu đồ được vẽ bằng giao diện hướng đối tượng của Matplotlib nhúng vào Tk. Ứng dụng
+gọi lại đúng các hàm lõi của thư viện, không sửa bất kỳ tệp lõi nào, nên kết quả trên giao diện
+trùng khớp bit với kết quả của kịch bản dòng lệnh.
+
+\subsection{Tab 1 -- Mã hóa và giấu tin}
+
+Người dùng chọn ảnh phủ, ảnh bí mật, chế độ kích thước ảnh bí mật (giữ nguyên $246\times300$ theo
+Hình~4--5, $156\times156$ theo Bảng~2, hoặc tùy chọn), thuật toán và chế độ khóa (khóa mặc định của
+bài báo hoặc mật khẩu tùy chỉnh). Kết quả hiển thị bốn ảnh (ảnh phủ thực dùng, ảnh bí mật, bản mã,
+ảnh stego hoặc bản đồ sai khác khuếch đại), các chỉ số chính, bảng hai nhóm độ đo an toàn và ba
+histogram (\hinh{fig:ui-tab1}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{tab1_encrypt}
+\caption{Tab 1 -- mã hóa AES-128 và giấu ảnh $246\times300$ (tự động chọn 3-LSB và phóng to ảnh
+phủ lên $257\times257$)}
+\label{fig:ui-tab1}
+\end{figure}
+
+\subsection{Tab 2 -- Giải mã và phòng thí nghiệm tấn công}
+
+Tab 2 mô phỏng phía nhận: mở một ảnh stego bất kỳ (hoặc nhận trực tiếp từ Tab 1), đọc và hiển thị
+từng trường của header kèm trạng thái kiểm tra CRC, rồi trích xuất và giải mã. Phần ``phòng thí
+nghiệm tấn công'' (\tn{tamper lab}) cho phép áp dụng năm kịch bản lên ảnh stego: giải mã bằng sai
+khóa, nén JPEG chất lượng 95, đảo một bit trong header, đảo 1\% bit LSB của vùng dữ liệu và cộng
+nhiễu Gauss $\sigma = 2$. Hệ thống báo rõ quá trình dừng ở giai đoạn nào (header, trích xuất hay
+giải mã) và vì sao (\hinh{fig:ui-tab2}).
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{\linewidth}
+  \centering\includegraphics[width=0.93\linewidth]{tab2_tamper}
+  \caption{Đảo 1 bit trong trường \code{ciphertext\_len}: magic vẫn đúng nhưng CRC-16 phát hiện
+  header bị sửa}
+\end{subfigure}
+
+\vspace{3mm}
+\begin{subfigure}{\linewidth}
+  \centering\includegraphics[width=0.93\linewidth]{tab2_wrongkey}
+  \caption{Giải mã AES bằng khóa sai: lỗi gỡ đệm PKCS\#7, hiển thị dữ liệu giải mã thô (nhiễu)}
+\end{subfigure}
+\caption{Tab 2 -- kiểm tra header và phòng thí nghiệm tấn công}
+\label{fig:ui-tab2}
+\end{figure}
+
+\subsection{Tab 3 -- So sánh ba thuật toán}
+
+Tab 3 chạy cả ba thuật toán trên cùng một cặp ảnh và dựng lại Hình~5 của bài báo (ảnh mã hóa,
+histogram bản mã, histogram ảnh stego của từng thuật toán), kèm bảng so sánh đầy đủ các độ đo và hệ
+số tăng tốc so với 3DES (\hinh{fig:ui-tab3}). Toàn bộ kết quả có thể xuất ra thư mục dưới dạng ảnh
+PNG và tệp CSV.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{tab3_compare}
+\caption{Tab 3 -- so sánh 3DES, AES và Chaotic trên cùng một cặp ảnh}
+\label{fig:ui-tab3}
+\end{figure}
+
+\subsection{Tab 4 -- Bảng điều khiển kết quả 8000 ảnh}
+
+Tab 4 nạp hai tệp CSV kết quả benchmark, hiển thị bảng đối chiếu ``Python -- bài báo -- chênh lệch''
+cho từng thuật toán và các biểu đồ có thể lọc theo tập dữ liệu (\code{train}/\code{test}) và theo
+lớp ảnh (\hinh{fig:ui-tab4}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{tab4_benchmark}
+\caption{Tab 4 -- bảng điều khiển đối chiếu kết quả 8000 ảnh với Bảng~2 của bài báo}
+\label{fig:ui-tab4}
+\end{figure}
+
+\subsection{Đóng gói thành tệp thực thi}
+
+Ứng dụng được đóng gói bằng PyInstaller ở chế độ \emph{onedir} (\code{packaging/ct204\_app.spec}),
+cho ra thư mục \code{CT204\_CryptoStego} gồm tệp \code{CT204\_CryptoStego.exe} và thư mục
+\code{\_internal}. Gói kèm tệp cấu hình, cặp ảnh mẫu và các tệp kết quả benchmark, nhưng không kèm
+8000 ảnh gốc. Khi chạy dạng \code{.exe}, ứng dụng tự xác định thư mục tài nguyên qua biến
+\code{sys.\_MEIPASS} và chuyển bộ nhớ đệm JIT của Numba sang thư mục tạm để tránh lỗi ghi vào thư
+mục chương trình. Người dùng chỉ cần giải nén và chạy, không cần cài Python.
+
+\section{Kiểm thử phần mềm}
+
+Hệ thống được kiểm thử tự động bằng pytest với tổng cộng \textbf{347 ca kiểm thử}
+(\bang{tab:tests}). Toàn bộ 347 ca đều đạt khi chạy trên môi trường ở \bang{tab:tech}. Các ca kiểm
+thử quan trọng nhất là kiểm thử khứ hồi (\tn{round-trip}): với mọi thuật toán, mọi kích thước ảnh
+(kể cả ảnh toàn 0, ảnh có kích thước là bội số của 8/16, ảnh lớn buộc phải phóng to ảnh phủ), ảnh
+khôi phục phải giống hệt ảnh gốc.
+
+\begin{table}[H]
+\centering
+\caption{Thống kê các ca kiểm thử tự động}
+\label{tab:tests}
+\small
+\begin{tabularx}{\linewidth}{@{}P{4.6cm}rL@{}}
+\toprule
+\thead{Tệp kiểm thử} & \thead{Số ca} & \thead{Nội dung chính}\\
+\midrule
+\code{test\_crypto.py}   & 126 & Khứ hồi cả 3 thuật toán; độ dài khóa/IV; đệm PKCS\#7; tính tất định; khóa 3DES suy biến; JIT warm-up; chế độ cache mặt nạ\\
+\code{test\_lsb.py}      & 71  & Đóng gói/kiểm tra header, CRC; chọn $k$; công thức phóng to; nhúng/trích khứ hồi; phát hiện ảnh hỏng; không có vòng lặp Python trên điểm ảnh\\
+\code{test\_metrics.py}  & 38  & MSE, PSNR, SSIM, NPCR, UACI, entropy, tương quan trên các ca đã biết đáp án; đo EncTime; chạy thử hai kịch bản \code{run\_single}, \code{run\_benchmark}\\
+\code{test\_pipeline.py} & 40  & Đầu -- cuối: ảnh khôi phục giống hệt (MSE $=0$); ghi/đọc PNG; từ chối lưu JPEG\\
+\code{test\_ui\_controller.py} & 72 & Nghiệp vụ giao diện: hai chế độ khóa, kiểm tra header, 4 kịch bản tấn công, xuất kết quả, luồng nền, chạy thử toàn bộ giao diện\\
+\midrule
+\textbf{Tổng} & \textbf{347} & \textbf{Tất cả đều đạt}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\input{chapters/chuong3_ketqua}

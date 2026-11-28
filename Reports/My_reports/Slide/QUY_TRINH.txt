@@ -1,0 +1,28 @@
+QUY TRINH LAM SLIDE BAO CAO DO AN CT204 - AN TOAN VA BAO MAT THONG TIN
+Thu muc nay: ...\Project\Reports\My_reports\Slide
+
+CAU TRUC
+  01_NOI_DUNG\          (co san, khong dung trong quy trinh nay; bao cao LaTeX nam o thu muc Latex)
+  02_DAN_Y\             dan_y_slide.md  (dan y de duyet)
+  03_TEMPLATE\          CTU_PowerPoint_Template.pptx
+  04_SLIDE_HOAN_CHINH\  file .pptx cuoi
+  QUY_TRINH.txt         file nay
+
+NGUON (chi doc, khong sua)
+  Bao cao LaTeX : ...\My_reports\Latex\main.tex (PDF cung thu muc de doi chieu)
+  Ma nguon      : ...\Project\SOURCES
+  Khong chep ban LaTeX vao thu muc Slide.
+
+5 BUOC
+  1. Doc bao cao + ma nguon, liet ke muc "Can kiem tra"        [xong]
+  2. Viet dan y vao 02_DAN_Y\dan_y_slide.md                     [xong - 35 slide, 15'00"]
+  3. DUNG, bao nguoi dung duyet. Chua dung slide khi chua noi "tien hanh"   [dang cho duyet]
+  4. Dung .pptx bang python-pptx tren template (chart/bang goc, so do ve lai
+     bang hinh khoi, ky hieu chi so tren/duoi, ghi chu nguoi noi moi slide)
+  5. Kiem tra: validate, render xem tung slide, doi chieu so lieu voi bang goc;
+     luu vao 04_SLIDE_HOAN_CHINH va bao ngan
+
+QUY UOC
+  Noi tieng Viet, giu nguyen thuat ngu tieng Anh chuyen nganh.
+  Chu noi dung >= 18pt, toi da ~6 dong/slide, moi slide mot thong diep.
+  Cho nao khong chac thi ghi ro va hoi, khong tu bia so lieu hay mo ta.
